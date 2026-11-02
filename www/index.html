@@ -1499,9 +1499,19 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (r.level === "scam") gAlert(imp ? "imp" : "sms", m.from, 0, "red");
     render(true);
   }
+  /* Tell the phone's background scanner (Android side) what it needs: on or off, language, Safaricom's fraud list. */
+  var syncT = null;
+  function syncNative() {
+    if (syncT) clearTimeout(syncT);
+    syncT = setTimeout(function () {
+      syncT = null;
+      var sms = SMS(); if (!sms) return;
+      try { sms.syncState({ enabled: !!S.live.on, lang: S.lang, db: JSON.stringify(S.shared.db) }).catch(function () {}); } catch (e) {}
+    }, 300);
+  }
   function enableLive() {
     var sms = SMS(); if (!sms) return;
-    S.live.on = true; S.live.denied = false; try { localStorage.setItem("linda_live", "1"); } catch (e) {}
+    S.live.on = true; syncNative(); S.live.denied = false; try { localStorage.setItem("linda_live", "1"); } catch (e) {}
     if (!S.live.listening) {
       S.live.listening = true;
       try { sms.addListener("smsReceived", function (o) { if (S.live.on) handleIncoming(liveMsg(o)); }); } catch (e) {}
@@ -1527,7 +1537,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (!Relay.room()) { S.rstat = "off"; return; }
     S.rstat = "connecting";
     Relay.connect("app", function (o) {
-      if (o.k === "confirm" && o.n) { S.shared = Shared.confirm(o.n); toast(fill2(t("cnGot"), { n: o.n })); render(true); renderOv(); }
+      if (o.k === "confirm" && o.n) { S.shared = Shared.confirm(o.n); syncNative(); toast(fill2(t("cnGot"), { n: o.n })); render(true); renderOv(); }
       else if (o.k === "call" && o.n) {
         if (o.mark) S.shared = Shared.confirm(String(o.n));
         if (!(S.ov && S.ov.type === "call")) { callOpen(String(o.n), false, true); if (document.hidden) notify(t("incoming"), String(o.n), null); }
@@ -1538,7 +1548,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     hbT = setInterval(function () { if (!document.hidden) Relay.send("app", { k: "hello" }); }, 60000);
   }
   function turnOffLive() {
-    S.live.on = false; S.live.msgs = []; S.live.contacts = []; S.live.cver++; S.events = seedEvents(); S.actTab = "alerts"; S.det = null;
+    S.live.on = false; syncNative(); S.live.msgs = []; S.live.contacts = []; S.live.cver++; S.events = seedEvents(); S.actTab = "alerts"; S.det = null;
     try { localStorage.setItem("linda_live", "0"); } catch (e) {}
     render();
   }
@@ -1857,7 +1867,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     else if (a === "tab") { S.tab = v; S.det = null; render(); }
     else if (a === "logo") { var nw = Date.now(); taps = nw - tapT < 1200 ? taps + 1 : 1; tapT = nw; if (taps >= 2) { taps = 0; S.sheet = "demo"; renderOv(); } }
     else if (a === "presenter") { S.sheet = "demo"; renderOv(); }
-    else if (a === "lang") { S.lang = v; try { localStorage.setItem("linda_lang", v); } catch (e) {} render(true); renderOv(); }
+    else if (a === "lang") { S.lang = v; syncNative(); try { localStorage.setItem("linda_lang", v); } catch (e) {} render(true); renderOv(); }
     else if (a === "closesheet") { S.sheet = null; renderOv(); }
     else if (a === "openev") { S.tab = "act"; S.det = v; if (S.ov && S.ov.type === "notif") S.ov = null; S.sheet = null; renderOv(); render(); }
     else if (a === "opennotif") { act("openev", S.ov && S.ov.ev); }
@@ -1931,7 +1941,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (e.key === "Enter" && e.target && e.target.id === "askInput") { e.preventDefault(); act("ask"); }
   });
   Shared.onChange(function (s) {
-    var before = S.shared; S.shared = s;
+    var before = S.shared; S.shared = s; syncNative();
     Object.keys(s.db).forEach(function (k) {
       var b = before.db[k];
       if (b && b.status !== "confirmed" && s.db[k].status === "confirmed") toast(t("confirmedNow").replace("{n}", k));

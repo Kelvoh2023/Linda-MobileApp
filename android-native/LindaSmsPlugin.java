@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +21,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
+
+import org.json.JSONObject;
 
 /**
  * Lets the Linda web app read the SMS inbox and the contacts on this phone, and hears about new SMS.
@@ -126,8 +129,21 @@ public class LindaSmsPlugin extends Plugin {
         call.resolve(ret);
     }
 
-    /** Called by SmsReceiver for every new SMS. */
-    static void deliver(Context ctx, String address, String body, long date) {
+    /** The app tells the phone's background scanner what it needs: on or off, language, Safaricom's fraud list. */
+    @PluginMethod
+    public void syncState(PluginCall call) {
+        SharedPreferences.Editor e = getContext().getSharedPreferences(LindaScanner.PREFS, Context.MODE_PRIVATE).edit();
+        if (call.hasOption("enabled")) e.putBoolean("enabled", Boolean.TRUE.equals(call.getBoolean("enabled")));
+        String db = call.getString("db");
+        if (db != null) e.putString("db", db);
+        String lang = call.getString("lang");
+        if (lang != null) e.putString("lang", lang);
+        e.apply();
+        call.resolve();
+    }
+
+    /** If Linda is open on screen, hand the SMS to the app. Returns true when the app took it. */
+    static boolean tryDeliver(String address, String body, long date) {
         LindaSmsPlugin p = instance;
         if (p != null && foreground && p.hasListeners("smsReceived")) {
             JSObject o = new JSObject();
@@ -135,10 +151,22 @@ public class LindaSmsPlugin extends Plugin {
             o.put("body", body);
             o.put("date", date);
             p.notifyListeners("smsReceived", o, true);
-            return;
+            return true;
         }
-        // The app is not on screen. Do a quick keyword check here and nudge the person to open Linda.
-        if (quickRisky(address, body)) nudge(ctx, address);
+        return false;
+    }
+
+    /** Linda is closed or in the background: scan here with the same model, and notify if it looks risky. */
+    static void scanInBackground(Context ctx, String address, String body, long date) {
+        SharedPreferences sp = ctx.getSharedPreferences(LindaScanner.PREFS, Context.MODE_PRIVATE);
+        if (!sp.getBoolean("enabled", false)) return; // protection is off, or the app has never turned it on
+        try {
+            JSONObject r = LindaScanner.scan(ctx, address, body);
+            if (!"ok".equals(r.optString("level", "ok"))) LindaAlert.show(ctx, address, r, sp.getString("lang", "en"), date);
+        } catch (Throwable t) {
+            // The scanner could not run. Fall back to the simple keyword check so the person still gets a nudge.
+            if (quickRisky(address, body)) nudge(ctx, address);
+        }
     }
 
     private static final String[] RISKY = {
