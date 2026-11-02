@@ -27,7 +27,7 @@ assert n == 1, "buildTypes not found"
 s, n = re.subn(r"(release \{\n)(\s+)(minifyEnabled false)", r"\1\2signingConfig signingConfigs.release\n\2\3", s, count=1)
 assert n == 1, "release block not found"
 # version from the build number
-s, n = re.subn(r"versionCode \d+", 'versionCode (System.getenv("LINDA_BUILD") ?: "1").toInteger()', s, count=1)
+s, n = re.subn(r"versionCode \d+", 'versionCode Integer.parseInt(System.getenv("LINDA_BUILD") ?: "1")', s, count=1)
 assert n == 1, "versionCode not found"
 s, n = re.subn(r'versionName "[^"]*"', 'versionName "1.0." + (System.getenv("LINDA_BUILD") ?: "0")', s, count=1)
 assert n == 1, "versionName not found"

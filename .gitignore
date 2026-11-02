@@ -1,0 +1,6 @@
+*.jks
+*.keystore
+linda-release*
+GITHUB-SECRETS.txt
+node_modules/
+android/
