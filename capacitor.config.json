@@ -1,0 +1,15 @@
+{
+  "appId": "ke.linda.demo",
+  "appName": "Linda",
+  "webDir": "www",
+  "backgroundColor": "#F6F8F5",
+  "plugins": {
+    "SystemBars": {
+      "style": "LIGHT"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_linda",
+      "iconColor": "#127A43"
+    }
+  }
+}

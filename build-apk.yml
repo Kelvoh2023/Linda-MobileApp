@@ -1,0 +1,104 @@
+# Builds the Linda APK in the cloud. Runs on every upload, or press "Run workflow" in the Actions tab.
+name: Build Linda APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      # Each build gets a higher number, so a new APK installs over the old one.
+      LINDA_BUILD: ${{ github.run_number }}
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Capacitor
+        run: npm ci
+
+      - name: Create the Android project
+        run: npx cap add android
+
+      - name: Apply the Linda icon and splash screen
+        run: |
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          cp -r icons-android/. android/app/src/main/res/
+
+      - name: Add Linda's message protection (native Android code)
+        run: |
+          cp android-native/MainActivity.java android-native/LindaSmsPlugin.java android-native/SmsReceiver.java android/app/src/main/java/ke/linda/demo/
+          python3 android-native/patch_manifest.py android/app/src/main/AndroidManifest.xml
+          cat android/app/src/main/AndroidManifest.xml
+
+      - name: Copy the web app into Android
+        run: npx cap sync android
+
+      - name: Accept Android licences
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null || true
+
+      - name: Set up release signing
+        env:
+          KEYSTORE_B64: ${{ secrets.LINDA_KEYSTORE_BASE64 }}
+          STORE_PASS: ${{ secrets.LINDA_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.LINDA_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.LINDA_KEY_PASSWORD }}
+        run: |
+          python3 android-native/patch_signing.py android/app/build.gradle
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$STORE_PASS" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASS" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/linda-release.jks"
+            echo "LINDA_KEYSTORE=$RUNNER_TEMP/linda-release.jks" >> "$GITHUB_ENV"
+            echo "LINDA_STORE_PASS=$STORE_PASS" >> "$GITHUB_ENV"
+            echo "LINDA_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "LINDA_KEY_PASS=$KEY_PASS" >> "$GITHUB_ENV"
+            echo "LINDA_SIGNED=yes" >> "$GITHUB_ENV"
+            echo "Release signing key found. Building a signed release."
+          else
+            echo "LINDA_SIGNED=no" >> "$GITHUB_ENV"
+            echo "::warning::No signing key in GitHub secrets. Building a debug APK that cannot update over older ones."
+          fi
+
+      - name: Build the APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          if [ "$LINDA_SIGNED" = "yes" ]; then
+            ./gradlew assembleRelease --no-daemon
+          else
+            ./gradlew assembleDebug --no-daemon
+          fi
+
+      - name: Check the signature and name the file
+        run: |
+          mkdir -p out
+          if [ "$LINDA_SIGNED" = "yes" ]; then
+            SRC=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          else
+            SRC=$(find android/app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          fi
+          echo "Built: $SRC"
+          cp "$SRC" "out/Linda-1.0.${LINDA_BUILD}.apk"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "out/Linda-1.0.${LINDA_BUILD}.apk" | tee out/signature.txt
+          echo "version 1.0.${LINDA_BUILD}, signed with release key: ${LINDA_SIGNED}" | tee -a out/signature.txt
+
+      - name: Keep the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linda-apk
+          path: out/

@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Linda Fraud Console</title>
+<meta name="theme-color" content="#0F2A1D">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one working page for the Safaricom fraud team. KPIs, review queue, pattern bars, live activity. */
+:root{
+  --bg:#EDF1EC; --surface:#FFFFFF; --ink:#13201A; --muted:#5A6A61; --line:#D5DDD6;
+  --green:#127A43; --green-soft:#DDF1E4; --red:#C5302B; --red-soft:#FBE3E1; --amber:#8A5F08; --amber-soft:#FBF0D5; --bar:#127A43;
+  --f-display:"Bricolage Grotesque","Trebuchet MS",sans-serif; --f-body:"Figtree","Segoe UI",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1310; --surface:#141D18; --ink:#E8EFEA; --muted:#93A59A; --line:#25332B;
+  --green:#4CC083; --green-soft:#15301F; --red:#FF7A72; --red-soft:#3A1816; --amber:#E3B24E; --amber-soft:#35290C; --bar:#4CC083; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1310; --surface:#141D18; --ink:#E8EFEA; --muted:#93A59A; --line:#25332B;
+  --green:#4CC083; --green-soft:#15301F; --red:#FF7A72; --red-soft:#3A1816; --amber:#E3B24E; --amber-soft:#35290C; --bar:#4CC083; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.top h1{font-size:clamp(24px,5vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.top p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--green);letter-spacing:.06em;text-transform:uppercase}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 14px;font-weight:700;font-size:13px;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--green)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.kpi b{font-family:var(--f-mono);font-size:26px;display:block;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.hot{border-color:var(--amber)}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;min-width:0}
+.panel h2{font-size:18px;font-weight:800}
+.panel .sub{color:var(--muted);font-size:13px;margin:3px 0 12px}
+.tbl{display:flex;flex-direction:column;gap:6px;overflow-x:auto}
+.tr{display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(130px,1.4fr) 56px minmax(90px,.8fr) minmax(120px,auto);gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;min-width:560px}
+.tr.h{border:0;padding-block:2px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tr.fresh{border-color:var(--amber);background:var(--amber-soft)}
+.n{font-family:var(--f-mono);font-size:13px}
+.c{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.pill{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;width:fit-content}
+.pill.conf{background:var(--red-soft);color:var(--red)}
+.pill.pend{background:var(--amber-soft);color:var(--amber)}
+.pill.new{background:var(--green);color:var(--bg);margin-left:6px}
+.sbtn{border:1px solid var(--green);background:transparent;color:var(--green);border-radius:999px;padding:6px 12px;font-weight:700;font-size:13px}
+.sbtn:hover{background:var(--green-soft)}
+.done{font-size:12px;color:var(--muted)}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar .l{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.bar .t{height:10px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar .f{height:100%;background:var(--bar);border-radius:6px;transition:width .4s}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.feed li{display:flex;gap:12px;font-size:13.5px}
+.feed time{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap;padding-top:2px}
+.note{font-size:12.5px;color:var(--muted)}
+.conn{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.conn .code{font-family:var(--f-mono);font-size:28px;font-weight:600;letter-spacing:.18em;background:var(--green-soft);color:var(--green);border-radius:12px;padding:6px 14px}
+.conn .st{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
+.conn .st i{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.conn .st.on i{background:var(--green)} .conn .st.off i{background:var(--red)}
+.smp{display:block;font-size:12px;color:var(--muted);margin-top:2px;font-style:italic;overflow-wrap:anywhere}
+.case{border:1px solid var(--line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;gap:3px}
+.case .cl{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.radar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.radar{grid-template-columns:minmax(0,1fr)}}
+.radar h3{font-family:var(--f-body);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.warn{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--amber);background:var(--amber-soft);color:var(--ink);border-radius:14px;padding:11px 13px;margin-bottom:14px}
+.warn b{color:var(--amber)}
+.warn p{margin:2px 0 0;font-size:13px;flex:1 1 320px}
+.warn.sent{border-color:var(--green);background:var(--green-soft)}
+.warn.sent b{color:var(--green)}
+.cols{display:flex;align-items:flex-end;gap:5px;height:110px}
+.cols div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%;font-size:10px;color:var(--muted)}
+.cols i{display:block;width:100%;border-radius:5px 5px 2px 2px;background:var(--bar);opacity:.55;min-height:3px}
+.cols div:last-child i{opacity:1}
+.trend{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.trend:first-of-type{border-top:0}
+.trend q{quotes:none;font-weight:600}
+.trend span{color:var(--muted);font-size:12px}
+.up{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--red);align-self:center}
+.up.flat{color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="live"><i></i> Live</div>
+      <h1>Linda fraud console</h1>
+      <p>What the Safaricom fraud team sees. Confirming a number sends it to every Linda phone.</p>
+    </div>
+    <div class="tools">
+      <button class="btn" id="sim">Simulate customer report</button>
+      <button class="btn" id="reset">Reset demo data</button>
+      <a class="btn" href="index.html">Open Linda app</a>
+    </div>
+  </div>
+
+  <section class="panel conn">
+    <div style="min-width:0;flex:1 1 280px">
+      <h2 style="font-size:18px">Connect a Linda phone</h2>
+      <p class="sub" style="margin:4px 0 0">On the phone, open Linda, then About, then Fraud console, and type this code. Reports sent from the phone then appear on this page, and numbers you confirm go back to the phone.</p>
+      <p class="note" id="rlink" style="margin:6px 0 0"></p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+      <div class="code" id="rcode">------</div>
+      <span class="st" id="rstat"><i></i><span>Waiting for a phone</span></span>
+      <button class="btn" id="rnew">New code</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 style="font-size:18px">Call the phone</h2>
+    <p class="sub">Pretend a caller is ringing the connected phone. It rings, vibrates and shows Linda's call screen, so you can show what a customer sees.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+      <button class="btn" data-call="0711 000 412">Reported scammer</button>
+      <button class="btn" data-call="100">Safaricom Customer Care</button>
+      <button class="btn" data-call="0722 555 101">Saved contact (Mum)</button>
+      <button class="btn" data-call="0745 000 777">Unknown number</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center">
+      <input id="callnum" inputmode="tel" placeholder="Or type any number, e.g. 0712 345 678" style="flex:1 1 220px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit">
+      <label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="callmark"> Treat as a reported scam number</label>
+      <button class="btn" id="callgo">Ring phone</button>
+    </div>
+    <p class="note" id="callst" style="margin:8px 0 0"></p>
+  </section>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section class="panel">
+    <h2>Scam Radar</h2>
+    <p class="sub">Where scams are spreading, when, and which wording is rising. Built from customer reports, so you see a wave before the queue fills up.</p>
+    <div id="warn"></div>
+    <div class="radar">
+      <div><h3>Hotspots by region</h3><div class="bars" id="reg"></div></div>
+      <div><h3>Reports, last 12 hours</h3><div class="cols" id="hrs"></div></div>
+      <div><h3>Trending wording this week</h3><div id="trn"></div></div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Review queue</h2>
+      <p class="sub">Numbers reported by customers. Newest reports first.</p>
+      <div class="tbl" id="tbl"></div>
+    </section>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="panel">
+        <h2>Scam cases</h2>
+        <p class="sub">Reports customers sent from the "I have been scammed" steps.</p>
+        <div id="cases" style="display:flex;flex-direction:column;gap:8px"></div>
+      </section>
+      <section class="panel">
+        <h2>Scam patterns</h2>
+        <p class="sub">Customer reports by type.</p>
+        <div class="bars" id="bars"></div>
+      </section>
+      <section class="panel">
+        <h2>Live activity</h2>
+        <p class="sub">Newest first.</p>
+        <ul class="feed" id="feed"></ul>
+      </section>
+    </div>
+  </div>
+  <p class="note">Demo data. Numbers are made up. In production this console reads Safaricom's real report stream and the 333 inbox.</p>
+</div>
+
+<script>
+/* Shared demo state. The Linda app and the fraud-team console read and write the same record,
+   so a report sent in the app shows up in the console, and a confirmation in the console
+   reaches the app. Works between pages of the same site on the same device. */
+var Shared = (function () {
+  var KEY = "linda_shared_v1", mem = null, ch = null;
+  try { ch = new BroadcastChannel("linda"); } catch (e) { ch = null; }
+
+  function radarSeed() {
+    return {
+      regions: { "Nairobi": 52, "Mombasa": 23, "Kisumu": 17, "Nakuru": 12, "Eldoret": 9, "Kisii": 6 },
+      hours: [6, 5, 4, 3, 4, 6, 9, 12, 14, 11, 13, 8],
+      trends: [
+        { type: "reversal", x: "sent by mistake, please reverse", n: 132, prev: 110, w: "Fake M-PESA reversal requests are common. Safaricom never asks you to send money back. Do not reverse it yourself, forward the M-PESA message to 456." },
+        { type: "kra", x: "KRA tax refund, claim now", n: 61, prev: 14, w: "Fake KRA refund messages are spreading. KRA does not ask you to claim refunds through links in an SMS. Do not click. Forward the message to 333." },
+        { type: "loan", x: "pay a fee to get your loan", n: 44, prev: 39, w: "No real lender asks for a fee before you get a loan. Do not pay it." },
+        { type: "prize", x: "you won, send your PIN", n: 38, prev: 41, w: "You cannot win a promotion you never entered. Never send your PIN." },
+        { type: "impersonation", x: "it's me, new number, send money", n: 29, prev: 9, w: "Scammers are texting as someone you know, saying they have a new number. Call the person on the number you already have before you send money." }
+      ]
+    };
+  }
+  function extraTrends() {
+    return [
+      { type: "phishing", x: "your account is suspended, click the link", n: 34, prev: 31, w: "Fake account-suspended messages are going around. Safaricom, banks and KRA do not ask you to log in through a link in an SMS. Do not click. Forward the message to 333." },
+      { type: "job", x: "job offer, pay a registration fee", n: 21, prev: 20, w: "Real employers never charge to apply for a job. Do not pay any registration fee." },
+      { type: "invest", x: "double your money in 7 days", n: 18, prev: 16, w: "No real investment guarantees quick returns. Do not send money to groups promising to double it." },
+      { type: "parcel", x: "parcel on hold, pay clearance fee", n: 15, prev: 14, w: "Couriers do not collect fees through text links. Do not pay or click. Call the courier on its official number." }
+    ];
+  }
+  function seed() {
+    var now = Date.now(), m = 60000;
+    return {
+      rev: 1, syncedAt: now - 4 * m, cases: [], alerts: [], guardian: null, stopped: { n: 0, amount: 0 }, broadcast: null, radar: radarSeed(),
+      db: {
+        "0711 000 412": { status: "confirmed", type: "reversal", count: 214, name: "" },
+        "0733 000 905": { status: "confirmed", type: "prize", count: 87, name: "" },
+        "0722 000 318": { status: "pending", type: "kra", count: 12, name: "" },
+        "100": { status: "verified", type: "verified", count: 0, name: "Safaricom Customer Care" }
+      },
+      feed: [
+        { t: now - 21 * m, x: "0722 000 318 reported by 12 customers. Waiting for review." },
+        { t: now - 40 * m, x: "0733 000 905 confirmed and blocked at network level." }
+      ]
+    };
+  }
+  function fix(s) {
+    s.cases = s.cases || []; s.alerts = s.alerts || []; s.stopped = s.stopped || { n: 0, amount: 0 };
+    if (s.guardian === undefined) s.guardian = null;
+    if (s.broadcast === undefined) s.broadcast = null;
+    if (!s.radar) s.radar = radarSeed();
+    var have = {}; s.radar.trends.forEach(function (t) { have[t.type] = 1; });
+    radarSeed().trends.concat(extraTrends()).forEach(function (t) { if (!have[t.type]) s.radar.trends.push(t); });
+    return s;
+  }
+  function load() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
+    if (!s || !s.db) s = mem || seed();
+    mem = fix(s); return mem;
+  }
+  function save(s) {
+    s.rev = (s.rev || 0) + 1; mem = s;
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+    try { if (ch) ch.postMessage("u"); } catch (e) {}
+    return s;
+  }
+  function onChange(fn) {
+    window.addEventListener("storage", function (e) { if (e.key === KEY) fn(load()); });
+    if (ch) ch.onmessage = function () { fn(load()); };
+  }
+  function norm(n) { return String(n).replace(/[^0-9]/g, "").replace(/^254/, "0"); }
+  function findKey(db, n) {
+    var w = norm(n), k;
+    for (k in db) if (norm(k) === w) return k;
+    return null;
+  }
+  function report(n, type, region, sample) {
+    var s = load(), k = findKey(s.db, n) || n, d = s.db[k], r = s.radar, tr, i;
+    if (d && d.status !== "verified") { d.count++; d.lastAt = Date.now(); if (sample && !d.sample) d.sample = String(sample).slice(0, 220); }
+    else if (!d) { s.db[k] = { status: "pending", type: type || "other", count: 1, name: "", fresh: true, lastAt: Date.now(), sample: sample ? String(sample).slice(0, 220) : "" }; }
+    /* Scam Radar: where, when and what wording */
+    region = region || "Nairobi"; r.regions[region] = (r.regions[region] || 0) + 1; r.hours[r.hours.length - 1]++;
+    for (i = 0; i < r.trends.length; i++) if (r.trends[i].type === (type || "other")) { tr = r.trends[i]; break; }
+    if (tr) tr.n++;
+    s.feed.unshift({ t: Date.now(), x: "Customer report for " + k + " (" + region + ")." });
+    return save(s);
+  }
+  function confirm(n) {
+    var s = load(), d = s.db[n];
+    if (!d) d = s.db[n] = { status: "confirmed", type: "other", count: 1, name: "" };
+    d.status = "confirmed"; d.fresh = false; s.syncedAt = Date.now();
+    s.feed.unshift({ t: Date.now(), x: n + " confirmed and blocked at network level. Sent to every Linda phone." });
+    return save(s);
+  }
+  function addCase(c) {
+    var s = load(); c.t = Date.now(); s.cases.unshift(c);
+    s.feed.unshift({ t: c.t, x: "New scam case " + c.ref + " (" + c.type + (c.amount ? ", KSh " + c.amount : "") + ")." });
+    return save(s);
+  }
+  /* Family Guardian: g = {name, phone, protectedName} or null to switch off */
+  function setGuardian(g) { var s = load(); s.guardian = g; if (g) s.feed.unshift({ t: Date.now(), x: "A customer turned on Family Guardian." }); return save(s); }
+  function addAlert(a) { var s = load(); a.t = Date.now(); s.alerts.unshift(a); if (s.alerts.length > 20) s.alerts.length = 20; return save(s); }
+  /* A payment the customer cancelled after Linda warned them */
+  function addStopped(amount) {
+    var s = load(); s.stopped.n++; s.stopped.amount += (amount || 0);
+    s.feed.unshift({ t: Date.now(), x: "A customer cancelled a payment after a Linda warning" + (amount ? " (KSh " + amount + ")." : ".") });
+    return save(s);
+  }
+  /* The fraud team pushes a warning to every Linda phone */
+  function setBroadcast(text) { var s = load(); s.broadcast = text ? { t: Date.now(), x: text } : null; if (text) s.feed.unshift({ t: Date.now(), x: "Warning sent to every Linda phone." }); return save(s); }
+  function reset() { mem = null; try { localStorage.removeItem(KEY); } catch (e) {} var s = seed(); return save(s); }
+  function fmtTime(ts) {
+    var d = new Date(ts), h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12; return h + ":" + (m < 10 ? "0" + m : m) + " " + ap;
+  }
+  return { load: load, save: save, onChange: onChange, report: report, confirm: confirm, addCase: addCase, setGuardian: setGuardian, addAlert: addAlert, addStopped: addStopped, setBroadcast: setBroadcast, reset: reset, fmtTime: fmtTime, findKey: findKey };
+})();
+
+/* Relay: lets the Linda app on one phone and the fraud console on another device talk to each other.
+   Demo only. It uses a free public message relay (ntfy.sh) and a secret 6-letter room code, so only
+   devices that know the code see the demo reports. Production would use Safaricom's own secure backend. */
+var Relay = (function () {
+  var DEF = "https://ntfy.sh", ALPHA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", es = null, seen = [], cur = null;
+  try { seen = JSON.parse(localStorage.getItem("linda_seen")) || []; } catch (e) { seen = []; }
+  function keep() { try { localStorage.setItem("linda_seen", JSON.stringify(seen.slice(-250))); } catch (e) {} }
+  function ls(k, v) {
+    try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {}
+    return null;
+  }
+  function base() { return (ls("linda_relay") || DEF).replace(/\/+$/, ""); }
+  function rid(n) { var o = "", i; for (i = 0; i < n; i++) o += ALPHA.charAt(Math.floor(Math.random() * ALPHA.length)); return o; }
+  function dev() { var d = ls("linda_dev"); if (!d) { d = rid(10); ls("linda_dev", d); } return d; }
+  function clean(c) { return String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6); }
+  function valid(c) { return clean(c).length === 6; }
+  function room() { var c = clean(ls("linda_room")); return c.length === 6 ? c : ""; }
+  function setRoom(c) { c = clean(c); if (c.length === 6) ls("linda_room", c); else ls("linda_room", null); return room(); }
+  function topic(role, out) { /* app sends on -u and listens on -d; console is the opposite */
+    var up = role === "app" ? out : !out; return "linda-demo-" + room() + (up ? "-u" : "-d");
+  }
+  function send(role, obj) {
+    if (!room()) return Promise.resolve(false);
+    obj.id = rid(12); obj.dev = dev(); obj.t = Date.now(); seen.push(obj.id); keep();
+    return fetch(base() + "/" + topic(role, true), { method: "POST", body: JSON.stringify(obj) }).then(function (r) { return !!r.ok; }, function () { return false; });
+  }
+  function close() { if (es) { try { es.close(); } catch (e) {} es = null; } if (pollT) { clearTimeout(pollT); pollT = null; } cur = null; }
+  var pollT = null, lastId = "";
+  function connect(role, onMsg, onStatus) {
+    close(); cur = { role: role, onMsg: onMsg, onStatus: onStatus };
+    if (!room()) { if (onStatus) onStatus("off"); return; }
+    if (onStatus) onStatus("connecting");
+    var me = cur, okSse = false;
+    function handle(ev) {
+      var m, o;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      take(m);
+    }
+    function take(m) {
+      var o;
+      try { if (m.id) lastId = m.id; if (m.event && m.event !== "message") return; o = JSON.parse(m.message); } catch (e) { return; }
+      if (!o || !o.id || seen.indexOf(o.id) > -1 || o.dev === dev()) return;
+      seen.push(o.id); if (seen.length > 300) seen.splice(0, 100); keep();
+      if (onStatus) onStatus("online");
+      onMsg(o);
+    }
+    /* Live stream. Works on most networks. */
+    try {
+      if (typeof EventSource !== "undefined") {
+        es = new EventSource(base() + "/" + topic(role, false) + "/sse?since=6h");
+        es.onopen = function () { okSse = true; if (onStatus) onStatus("online"); };
+        es.addEventListener("message", handle); es.onmessage = handle;
+      }
+    } catch (e) {}
+    /* Backup: ask for new messages every 3 seconds. Works on networks that block or buffer streams (hotel Wi-Fi, antivirus, proxies). */
+    function poll() {
+      if (cur !== me) return;
+      fetch(base() + "/" + topic(role, false) + "/json?poll=1&since=" + (lastId || "6h")).then(function (r) {
+        if (!r.ok) throw new Error("http " + r.status);
+        return r.text();
+      }).then(function (txt) {
+        if (cur !== me) return;
+        txt.split("\n").forEach(function (ln) { if (ln.trim()) { try { take(JSON.parse(ln)); } catch (e) {} } });
+        if (onStatus) onStatus("online");
+      }).catch(function (e) { if (onStatus && !okSse) onStatus("offline", String(e && e.message || e)); }).then(function () { pollT = setTimeout(poll, 3000); });
+    }
+    poll();
+  }
+  return { room: room, setRoom: setRoom, newRoom: function () { return setRoom(rid(6)); }, valid: valid, clean: clean, send: send, connect: connect, close: close, base: base };
+})();
+
+</script>
+<script>
+(function () {
+  var TYPE = { reversal: "M-PESA reversal scam", prize: "Fake prize promotion", kra: "Fake KRA refund", loan: "Fake loan fee", impersonation: "Pretending to be someone you know", other: "Suspicious caller", phishing: "Fake account or link message", job: "Fake job offer", invest: "Fake investment", parcel: "Fake parcel fee" };
+  var SIM = [["0745 000 777", "other", "Nairobi"], ["0701 000 654", "loan", "Mombasa"], ["0722 000 318", "kra", "Nakuru"], ["0711 000 412", "reversal", "Kisumu"], ["0799 000 120", "prize", "Eldoret"], ["0722 000 318", "kra", "Nairobi"]];
+  var simI = 0;
+  var $ = function (q) { return document.querySelector(q); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function render(s) {
+    var keys = Object.keys(s.db).filter(function (k) { return s.db[k].status !== "verified"; });
+    var rep = 0, pend = 0, conf = 0;
+    keys.forEach(function (k) { var d = s.db[k]; rep += d.count; if (d.status === "pending") pend++; else conf++; });
+    $("#kpis").innerHTML =
+      '<div class="kpi"><b>' + rep + "</b><span>customer reports</span></div>" +
+      '<div class="kpi' + (pend ? " hot" : "") + '"><b>' + pend + "</b><span>waiting for review</span></div>" +
+      '<div class="kpi"><b>' + conf + "</b><span>blocked numbers</span></div>" +
+      '<div class="kpi' + ((s.cases || []).length ? " hot" : "") + '"><b>' + (s.cases || []).length + "</b><span>scam cases reported</span></div>" +
+      '<div class="kpi"><b>' + s.stopped.n + "</b><span>payments cancelled after a warning" + (s.stopped.amount ? " (KSh " + s.stopped.amount.toLocaleString("en-KE") + ")" : "") + "</span></div>";
+    radar(s);
+    var cs = s.cases || [];
+    $("#cases").innerHTML = cs.length ? cs.slice(0, 6).map(function (c) {
+      return '<div class="case"><div><span class="n">' + esc(c.ref) + "</span> <span class=\"pill pend\">" + esc(c.type) + "</span></div><div class=\"cl\">" +
+        (c.amount ? "KSh " + c.amount + " · " : "") + (c.code ? "Code " + esc(c.code) + " · " : "") + esc(c.when || "") + (c.who ? " · " + esc(c.who) : "") + "</div></div>";
+    }).join("") : '<p class="note">No cases yet. When a customer finishes the "I have been scammed" steps in the app and sends the report, it appears here.</p>';
+    keys.sort(function (a, b) {
+      var A = s.db[a], B = s.db[b];
+      if ((A.status === "pending") !== (B.status === "pending")) return A.status === "pending" ? -1 : 1;
+      return (B.lastAt || 0) - (A.lastAt || 0) || B.count - A.count;
+    });
+    $("#tbl").innerHTML = '<div class="tr h"><span>Number</span><span>Pattern</span><span style="text-align:right">Reports</span><span>Status</span><span></span></div>' +
+      keys.map(function (k) {
+        var d = s.db[k], isC = d.status === "confirmed";
+        return '<div class="tr' + (d.fresh ? " fresh" : "") + '"><span class="n">' + esc(k) + (d.fresh ? '<span class="pill new">New</span>' : "") + "</span><span>" + esc(TYPE[d.type] || "Unclassified") + (d.sample ? '<em class="smp">"' + esc(d.sample) + '"</em>' : "") + '</span><span class="c">' + d.count + '</span><span><span class="pill ' + (isC ? "conf" : "pend") + '">' + (isC ? "Blocked" : "Pending") + "</span></span><span>" +
+          (isC ? '<span class="done">Sent to all phones</span>' : '<button class="sbtn" data-n="' + esc(k) + '">Confirm and block</button>') + "</span></div>";
+      }).join("");
+    var by = {}, max = 1;
+    keys.forEach(function (k) { var t = s.db[k].type || "other"; by[t] = (by[t] || 0) + s.db[k].count; });
+    Object.keys(by).forEach(function (t) { if (by[t] > max) max = by[t]; });
+    $("#bars").innerHTML = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; }).map(function (t) {
+      return '<div class="bar"><div class="l"><span>' + esc(TYPE[t] || t) + '</span><b class="n">' + by[t] + '</b></div><div class="t"><div class="f" style="width:' + Math.round(by[t] / max * 100) + '%"></div></div></div>';
+    }).join("");
+    $("#feed").innerHTML = s.feed.slice(0, 7).map(function (f) { return "<li><time>" + Shared.fmtTime(f.t) + "</time><span>" + esc(f.x) + "</span></li>"; }).join("");
+  }
+  function radar(s) {
+    var r = s.radar, regs = Object.keys(r.regions).sort(function (a, b) { return r.regions[b] - r.regions[a]; }), rmax = 1, hmax = 1, i, now = new Date();
+    regs.forEach(function (k) { if (r.regions[k] > rmax) rmax = r.regions[k]; });
+    r.hours.forEach(function (v) { if (v > hmax) hmax = v; });
+    $("#reg").innerHTML = regs.map(function (k) {
+      return '<div class="bar"><div class="l"><span>' + esc(k) + '</span><b class="n">' + r.regions[k] + '</b></div><div class="t"><div class="f" style="width:' + Math.round(r.regions[k] / rmax * 100) + '%"></div></div></div>';
+    }).join("");
+    $("#hrs").innerHTML = r.hours.map(function (v, i) {
+      var h = (now.getHours() - (r.hours.length - 1 - i) + 48) % 24;
+      return '<div title="' + v + ' reports"><i style="height:' + Math.max(4, Math.round(v / hmax * 80)) + '%"></i>' + (i % 3 === 2 || i === r.hours.length - 1 ? h : "") + "</div>";
+    }).join("");
+    var tr = r.trends.map(function (t) { return { t: t, up: t.prev ? Math.round((t.n - t.prev) / t.prev * 100) : 0 }; });
+    tr.sort(function (a, b) { return b.up - a.up; });
+    $("#trn").innerHTML = tr.map(function (x) {
+      return '<div class="trend"><q>' + esc(x.t.x) + '</q><b class="up' + (x.up < 50 ? " flat" : "") + '">' + (x.up >= 0 ? "+" : "") + x.up + '%</b><span>' + esc(TYPE[x.t.type] || x.t.type) + " · " + x.t.n + " reports</span><span></span></div>";
+    }).join("");
+    var top = tr[0];
+    if (s.broadcast) $("#warn").innerHTML = '<div class="warn sent"><div><b>Warning sent to every Linda phone at ' + Shared.fmtTime(s.broadcast.t) + '.</b><p>' + esc(s.broadcast.x) + '</p></div><button class="btn" id="unwarn">Clear</button></div>';
+    else if (top && top.up >= 100) $("#warn").innerHTML = '<div class="warn"><div><b>Early warning: "' + esc(top.t.x) + '" is up ' + top.up + '% this week.</b><p>' + esc(top.t.w) + '</p></div><button class="btn" id="bcast" data-i="' + top.t.type + '">Warn all Linda phones</button></div>';
+    else $("#warn").innerHTML = "";
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.id === "bcast") { var s0 = Shared.load(), t0 = s0.radar.trends.filter(function (t) { return t.type === b.dataset.i; })[0]; render(Shared.setBroadcast("Safaricom alert: " + t0.w)); Relay.send("console", { k: "broadcast", text: "Safaricom alert: " + t0.w }); return; }
+    if (b.id === "unwarn") { render(Shared.setBroadcast(null)); Relay.send("console", { k: "broadcast", text: null }); return; }
+    if (b.dataset.call || b.id === "callgo") {
+      var num = b.dataset.call || ($("#callnum").value || "").trim(), mark = b.id === "callgo" && $("#callmark").checked;
+      if (!num) { $("#callst").textContent = "Type a number first."; return; }
+      if (!Relay.room()) { $("#callst").textContent = "Connect a phone first."; return; }
+      if (mark) render(Shared.confirm(num));
+      $("#callst").textContent = "Ringing the phone from " + num + "...";
+      Relay.send("console", { k: "call", n: num, mark: mark }).then(function (ok) { $("#callst").textContent = ok ? "Calling " + num + ". Look at the phone." : "Could not reach the relay."; });
+      return;
+    }
+    if (b.id === "rnew") { Relay.newRoom(); startRelay(); return; }
+    if (b.dataset.n) { render(Shared.confirm(b.dataset.n)); Relay.send("console", { k: "confirm", n: b.dataset.n }); }
+    else if (b.id === "sim") { var x = SIM[simI++ % SIM.length]; render(Shared.report(x[0], x[1], x[2])); }
+    else if (b.id === "reset") render(Shared.reset());
+  });
+  Shared.onChange(render);
+  render(Shared.load());
+  /* ---- cross-device link ---- */
+  var lastSeen = 0;
+  function showStat(kind, text) { var el = $("#rstat"); el.className = "st " + kind; el.lastChild.textContent = text; }
+  function startRelay() {
+    var code = Relay.room() || Relay.newRoom();
+    $("#rcode").textContent = code;
+    $("#rlink").textContent = "This page: " + location.href.split("?")[0] + "?room=" + code;
+    showStat("", "Waiting for a phone");
+    Relay.connect("console", function (o) {
+      var fresh = Date.now() - (o.t || 0) < 180000; if (fresh) lastSeen = Date.now();
+      if (o.k === "report") render(Shared.report(o.n, o.type, o.region, o.text));
+      else if (o.k === "case" && o.c) render(Shared.addCase(o.c));
+      else if (o.k === "stopped") render(Shared.addStopped(o.amount || 0));
+      if (fresh) showStat("on", "Phone connected" + (o.k === "hello" ? "" : " · message received " + Shared.fmtTime(lastSeen)));
+    }, function (st) {
+      if (st === "offline") showStat("off", "Cannot reach the relay (" + (arguments[1] || "no answer") + "). Check the internet or try mobile data.");
+      else if (st === "unsupported") showStat("off", "This browser cannot connect.");
+      else if (st === "online" && !lastSeen) showStat("", "Ready. Waiting for a phone");
+    });
+  }
+  (function () {
+    var m = /[?&]room=([A-Za-z0-9]+)/.exec(location.search); if (m && Relay.valid(m[1])) Relay.setRoom(m[1]);
+    startRelay();
+  })();
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () { try { navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {} });
+  }
+})();
+</script>
