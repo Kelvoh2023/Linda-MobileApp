@@ -45,8 +45,10 @@ final class LindaAlert {
                 nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Scam alerts", NotificationManager.IMPORTANCE_HIGH));
             }
             Intent open = new Intent(ctx, MainActivity.class);
+            open.putExtra("linda_addr", address == null ? "" : address);
+            open.putExtra("linda_date", date);
             open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent pi = PendingIntent.getActivity(ctx, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pi = PendingIntent.getActivity(ctx, (int) (date & 0x7fffffffL), open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
             Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, CHANNEL) : new Notification.Builder(ctx);
             b.setSmallIcon(R.drawable.ic_stat_linda)
                 .setContentTitle(title)

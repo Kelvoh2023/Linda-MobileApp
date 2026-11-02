@@ -41,6 +41,16 @@ svg.i{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke
 .view{flex:1;min-height:0;overflow-y:auto;padding:8px max(16px,env(safe-area-inset-left,0px)) 16px max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
 .hd{display:flex;align-items:center;gap:10px;padding-top:6px}
 .hd h2{font-size:24px;font-weight:800;letter-spacing:-.02em;flex:1}
+.gear{width:36px;height:36px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;flex:none;padding:0;cursor:pointer}
+.ob{display:flex;flex-direction:column;gap:14px;min-height:100%;justify-content:center;padding:8px 4px}
+.ob .big{width:84px;height:84px;border-radius:26px;background:var(--green);color:#fff;display:grid;place-items:center}
+.ob .big svg{width:46px;height:46px}
+.ob h1{font-size:28px;line-height:1.1;margin:6px 0 0;letter-spacing:-.02em}
+.ob p{margin:0;font-size:15px;color:var(--muted)}
+.ob ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.ob li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.ob li svg{flex:none;color:var(--green);width:20px;height:20px;margin-top:2px}
+.dots{display:flex;gap:6px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--green);width:22px;border-radius:6px}
 .logo{width:36px;height:36px;border-radius:12px;background:var(--green);color:#fff;display:grid;place-items:center;flex:none}
 .pill-btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;display:inline-flex;gap:6px;align-items:center}
 .pill-btn b{color:var(--green)}
@@ -1015,6 +1025,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
 <script>
 (function () {
   var M = LindaModel, FL = LindaFlow, I = {
+    gear: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>',
     shield: '<svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>',
     home: '<svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>',
     msg: '<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg>',
@@ -1097,6 +1108,15 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       s9: "Guardian's phone: what family sees",
       navAct: "Activity", navPay: "Pay", navFam: "Family", navAsk: "Ask", actTitle: "Activity", actSub: "What Linda checked and stopped for you.",
       actEmpty: "Nothing yet. Linda lists every scam it stops here.", seeAll: "See all activity",
+      obT1: "Welcome to Linda", obS1: "Safaricom's fraud knowledge, on your phone. Linda warns you about scam messages and calls before you act on them.",
+      obT2: "What Linda does", obA: "Warns you about scam texts, even when the app is closed", obB: "Labels callers: reported, in your contacts, or verified", obC: "Guides you step by step if you have been scammed",
+      obT3: "Your messages stay on your phone", obS3: "Linda checks messages on this phone. Only the reports you choose to send go to Safaricom. Next, Android will ask to read your messages and contacts. Please allow it so Linda can protect you.",
+      obNext: "Next", obGo: "Turn on protection", obStart: "Get started", obSkip: "Not now",
+      setTitle: "Settings", setProt: "Protection", setLiveOn: "Live protection is on", setLiveOff: "Live protection is off", setPause: "Pause", setResume: "Turn on",
+      setLang: "Language", setTrust: "Trusted senders", setTrustNone: "None yet. When Linda flags a message from someone you trust, open it and tap Trust this sender.", setRemove: "Remove",
+      setData: "Your data", setClear: "Clear my reports history", setClearQ: "Clear the list of reports you sent? Reports Safaricom already received are not affected.", setCleared: "Cleared",
+      setWipe: "Delete all Linda data on this phone", setWipeQ: "Delete everything Linda stored on this phone? This turns protection off and restarts Linda.",
+      setAbout: "About", setVer: "Version", setMore: "More", trustBtn: "Trust this sender", trustDone: "Done. Linda will not flag messages from this sender.", trustRemoved: "Removed from trusted senders",
       rpTitle: "Reports you sent", rpEmpty: "You have not sent any reports yet. When you report a scam, it is listed here.", rpLocal: "Saved on this phone", rpSent: "Sent. Under review", rpConf: "Confirmed by Safaricom",
       rpCase: "Scam case", rpConnect: "Connect to the fraud console to share reports with the team.",
       cnTitle: "Fraud console", cnIntro: "The fraud console is the screen the Safaricom team uses. Open it on another device, then type the 6-letter code it shows. After that, every report you send here appears there, and numbers they confirm come back to this phone.",
@@ -1179,6 +1199,15 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       s9: "Simu ya mlinzi: familia inaona nini",
       navAct: "Shughuli", navPay: "Lipa", navFam: "Familia", navAsk: "Uliza", actTitle: "Shughuli", actSub: "Kile Linda ilichokagua na kuzuia kwa ajili yako.",
       actEmpty: "Hakuna bado. Linda inaorodhesha kila ulaghai inaouzuia hapa.", seeAll: "Ona shughuli zote",
+      obT1: "Karibu Linda", obS1: "Maarifa ya Safaricom kuhusu ulaghai, kwenye simu yako. Linda inakuonya kuhusu jumbe na simu za ulaghai kabla hujachukua hatua.",
+      obT2: "Linda inafanya nini", obA: "Inakuonya kuhusu jumbe za ulaghai, hata programu ikiwa imefungwa", obB: "Inaweka lebo kwa wapigaji: walioripotiwa, walio kwenye anwani zako, au waliothibitishwa", obC: "Inakuongoza hatua kwa hatua ukitapeliwa",
+      obT3: "Jumbe zako zinabaki kwenye simu yako", obS3: "Linda inakagua jumbe kwenye simu hii. Ni ripoti unazochagua kutuma tu ndizo huenda Safaricom. Kisha Android itaomba kusoma jumbe na anwani zako. Tafadhali ruhusu ili Linda ikulinde.",
+      obNext: "Endelea", obGo: "Washa ulinzi", obStart: "Anza", obSkip: "Sio sasa",
+      setTitle: "Mipangilio", setProt: "Ulinzi", setLiveOn: "Ulinzi wa moja kwa moja umewashwa", setLiveOff: "Ulinzi wa moja kwa moja umezimwa", setPause: "Simamisha", setResume: "Washa",
+      setLang: "Lugha", setTrust: "Watumaji unaowaamini", setTrustNone: "Hakuna bado. Linda ikiweka alama kwenye ujumbe wa mtu unayemwamini, fungua ujumbe na ugonge Amini mtumaji huyu.", setRemove: "Ondoa",
+      setData: "Data yako", setClear: "Futa historia ya ripoti zangu", setClearQ: "Futa orodha ya ripoti ulizotuma? Ripoti ambazo Safaricom ilishapokea hazitaathirika.", setCleared: "Imefutwa",
+      setWipe: "Futa data yote ya Linda kwenye simu hii", setWipeQ: "Futa kila kitu ambacho Linda imehifadhi kwenye simu hii? Hii itazima ulinzi na kuwasha Linda upya.",
+      setAbout: "Kuhusu", setVer: "Toleo", setMore: "Zaidi", trustBtn: "Amini mtumaji huyu", trustDone: "Sawa. Linda haitaweka alama kwenye jumbe za mtumaji huyu.", trustRemoved: "Ameondolewa kwenye watumaji unaowaamini",
       rpTitle: "Ripoti ulizotuma", rpEmpty: "Bado hujatuma ripoti yoyote. Ukiripoti ulaghai, utaorodheshwa hapa.", rpLocal: "Imehifadhiwa kwenye simu hii", rpSent: "Imetumwa. Inakaguliwa", rpConf: "Imethibitishwa na Safaricom",
       rpCase: "Kesi ya ulaghai", rpConnect: "Unganisha kwenye kituo cha ulaghai ili kushiriki ripoti na timu.",
       cnTitle: "Kituo cha ulaghai", cnIntro: "Kituo cha ulaghai ni skrini inayotumiwa na timu ya Safaricom. Kifungue kwenye kifaa kingine, kisha andika msimbo wa herufi 6 unaoonyeshwa. Baada ya hapo, kila ripoti unayotuma itaonekana huko, na namba wanazothibitisha zitarudi kwenye simu hii.",
@@ -1224,7 +1253,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     "Confirmed. KSh 200.00 sent to Mama Mboga."
   ];
 
-  var S = { lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
+  var S = { ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
   var timers = [], taps = 0, tapT = 0;
   var $ = function (q) { return document.querySelector(q); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -1246,8 +1275,9 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   function nameOf(n) { var c = contactOf(n); return c ? c.name : n; }
   var scanCache = {}, scanN = 0;
   function scanMsg(m) {
-    var k = m.id + "|" + S.shared.rev + "|" + S.live.cver + "|" + (S.live.on ? 1 : 0), c = scanCache[k];
+    var k = m.id + "|" + S.shared.rev + "|" + S.live.cver + "|" + (S.live.on ? 1 : 0) + "|" + S.trusted.length, c = scanCache[k];
     if (c) return c;
+    if (S.trusted.length && isTrusted(m.from)) { c = { score: 2, level: "ok", reasons: [], words: [], steps: ["careful"] }; scanCache[k] = c; return c; }
     if (scanN > 1500) { scanCache = {}; scanN = 0; }
     c = M.scan(m.body, { sender: m.from, db: S.shared.db, contacts: contactsList() });
     scanCache[k] = c; scanN++; return c;
@@ -1286,6 +1316,11 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* ---------- Send money check, Family Guardian ---------- */
   var G_DEF = { name: "Daniel (Son)", phone: "0712 555 303", protectedName: "Mama Wanjiku" };
   function fill2(str, o) { var k; for (k in o) str = str.split("{" + k + "}").join(o[k]); return str; }
+  /* ---------- first run, trusted senders ---------- */
+  try { S.ob = localStorage.getItem("linda_onboarded") === "1" ? 0 : 1; S.trusted = JSON.parse(localStorage.getItem("linda_trusted") || "[]") || []; } catch (e) { S.ob = 0; }
+  function trustKey(from) { var f = String(from || ""); return /\d{7}/.test(f) ? M.normNum(f) : f.toUpperCase(); }
+  function isTrusted(from) { return S.trusted.some(function (x) { return x.k === trustKey(from); }); }
+  function saveTrusted() { try { localStorage.setItem("linda_trusted", JSON.stringify(S.trusted)); } catch (e) {} syncNative(); }
   /* ---------- reports you sent (kept on this phone) ---------- */
   function loadSent() { try { var a = JSON.parse(localStorage.getItem("linda_sent")); if (a && a.length) return a; } catch (e) {} return []; }
   function saveSent() { try { localStorage.setItem("linda_sent", JSON.stringify(S.sent.slice(0, 60))); } catch (e) {} }
@@ -1351,7 +1386,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     var res = scanMsg(m), ct = contactOf(m.from), done = S.done[m.id];
     var h = '<div class="sec">' + esc(ct ? ct.name + " · " + m.from : m.from) + "</div>" + (ct ? '<span class="tag blue" style="width:fit-content">' + t("inContacts") + "</span>" : "");
     h += '<div class="msgbox">' + highlight(m.body, res) + "</div>";
-    var extra = res.level === "ok" ? "" : '<div class="btns"><button class="btn r w" data-a="reportmsg" data-v="' + m.id + '"' + (done ? " disabled" : "") + ">" + (done ? t("reported") : t("report")) + '</button><button class="btn w" data-a="toast" data-v="blocked">' + t("block") + "</button></div>";
+    var extra = res.level === "ok" ? "" : '<div class="btns"><button class="btn r w" data-a="reportmsg" data-v="' + m.id + '"' + (done ? " disabled" : "") + ">" + (done ? t("reported") : t("report")) + '</button><button class="btn w" data-a="trust" data-v="' + m.id + '">' + t("trustBtn") + "</button></div>";
     var sos = res.level === "scam" ? '<button class="btn sos" data-a="flowstart">' + I.alert + " " + t("scammed") + "</button>" : "";
     return h + verdictHTML(res, extra) + sos;
   }
@@ -1482,8 +1517,21 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       rebuildLiveEvents();
       var fresh = S.events.filter(function (e) { return e.live && !before[e.id]; })[0];
       if (fromResume && fresh) { S.tab = "act"; S.actTab = "alerts"; S.det = fresh.id; }
-      render(true);
+      render(true); consumeLaunch();
     }).catch(function (e) { S.live.busy = false; S.live.err = String((e && e.message) || e); render(true); });
+  }
+  /* If the person tapped one of Linda's background notifications, open that message. */
+  function consumeLaunch() {
+    var sms = SMS(); if (!sms || !sms.takeLaunch) return;
+    sms.takeLaunch().then(function (r) {
+      if (!r || !r.address) return;
+      var best = null, bd = 1e15, nn = M.normNum(r.address);
+      S.live.msgs.forEach(function (m) {
+        if (m.from === r.address || (nn && nn === M.normNum(m.from))) { var d = Math.abs(m.ts - (r.date || 0)); if (d < bd) { bd = d; best = m; } }
+      });
+      var ev = best ? S.events.filter(function (e) { return e.live && e.msg === best.id; })[0] : null;
+      S.ob = 0; S.tab = "act"; S.actTab = "alerts"; S.det = ev ? ev.id : (best ? "m:" + best.id : null); render();
+    }).catch(function () {});
   }
   function loadContacts(cb) {
     var sms = SMS(); if (!sms) { cb(); return; }
@@ -1506,7 +1554,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     syncT = setTimeout(function () {
       syncT = null;
       var sms = SMS(); if (!sms) return;
-      try { sms.syncState({ enabled: !!S.live.on, lang: S.lang, db: JSON.stringify(S.shared.db) }).catch(function () {}); } catch (e) {}
+      try { sms.syncState({ enabled: !!S.live.on, lang: S.lang, db: JSON.stringify(S.shared.db), trusted: JSON.stringify(S.trusted.map(function (x) { return x.k; })) }).catch(function () {}); } catch (e) {}
     }, 300);
   }
   function enableLive() {
@@ -1591,6 +1639,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* ---------- views ---------- */
   function header(title, withTools) {
     return '<div class="hd">' + (withTools ? '<button class="logo" data-a="logo" aria-label="Linda">' + I.shield + "</button>" : "") + "<h2>" + title + "</h2>" +
+      (withTools ? '<button class="gear" data-a="tab" data-v="settings" aria-label="' + t("setTitle") + '">' + I.gear + "</button>" : "") +
       '<div class="lang" role="group" aria-label="Language"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">EN</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">SW</button></div></div>';
   }
   function vHome() {
@@ -1615,6 +1664,28 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   }
 
 
+  function vOnboard() {
+    var n = S.ob, dots = '<div class="dots">' + [1, 2, 3].map(function (i) { return '<i class="' + (i === n ? "on" : "") + '"></i>'; }).join("") + "</div>", body, btns;
+    if (n === 1) { body = '<div class="big">' + I.shield + "</div><h1>" + t("obT1") + "</h1><p>" + t("obS1") + "</p>"; btns = '<button class="btn p w" data-a="obnext">' + t("obNext") + "</button>"; }
+    else if (n === 2) { body = "<h1>" + t("obT2") + "</h1><ul>" + ["obA", "obB", "obC"].map(function (k) { return "<li>" + I.check + "<span>" + t(k) + "</span></li>"; }).join("") + "</ul>"; btns = '<button class="btn p w" data-a="obnext">' + t("obNext") + "</button>"; }
+    else { body = "<h1>" + t("obT3") + "</h1><p>" + t("obS3") + "</p>"; btns = '<button class="btn p w" data-a="obgo">' + (SMS() ? t("obGo") : t("obStart")) + "</button>" + (SMS() ? '<button class="btn w" data-a="obskip">' + t("obSkip") + "</button>" : ""); }
+    return '<div class="ob"><div class="lang" role="group" style="align-self:flex-end"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">EN</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">SW</button></div>' + body + dots + '<div class="btns" style="flex-direction:column">' + btns + "</div></div>";
+  }
+  function vSettings() {
+    var h = '<button class="back" data-a="tab" data-v="home">' + I.back + " " + t("home") + "</button><h2>" + t("setTitle") + "</h2>";
+    if (SMS()) h += '<div class="sec">' + t("setProt") + '</div><div class="card" style="display:flex;align-items:center;gap:10px"><span style="flex:1;font-weight:600">' + (S.live.on ? t("setLiveOn") : t("setLiveOff")) + '</span><button class="btn' + (S.live.on ? "" : " p") + '" data-a="' + (S.live.on ? "liveoff" : "livego") + '">' + (S.live.on ? t("setPause") : t("setResume")) + "</button></div>";
+    h += '<div class="sec">' + t("setLang") + '</div><div class="seg" role="group"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">English</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">Kiswahili</button></div>';
+    h += '<div class="sec">' + t("setTrust") + "</div>" + (S.trusted.length ? S.trusted.map(function (x, i) {
+      return '<div class="card" style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(x.label) + '</span><button class="btn" data-a="untrust" data-v="' + i + '">' + t("setRemove") + "</button></div>";
+    }).join("") : '<div class="card"><p class="fine" style="margin:0">' + t("setTrustNone") + "</p></div>");
+    h += '<div class="sec">' + t("setMore") + '</div>' +
+      '<button class="row" data-a="tab" data-v="reports"><div class="av">' + I.msg + '</div><div class="tx"><b>' + t("sent").replace(/^./, function (c) { return c.toUpperCase(); }) + "</b><p>" + S.reports + "</p></div></button>" +
+      '<button class="row" data-a="tab" data-v="console"><div class="av">' + I.shield + '</div><div class="tx"><b>' + t("cnRow") + "</b><p>" + (Relay.room() ? esc(cnStatus()) : t("cnRowSub")) + "</p></div></button>" +
+      '<button class="row" data-a="tab" data-v="about"><div class="av">' + I.spark + '</div><div class="tx"><b>' + t("how") + "</b><p>" + t("howSub") + "</p></div></button>" +
+      '<div class="sec">' + t("setData") + '</div><div class="btns" style="flex-direction:column"><button class="btn w" data-a="clearsent">' + t("setClear") + '</button><button class="btn r w" data-a="wipe">' + t("setWipe") + "</button></div>" +
+      '<div class="sec">' + t("setAbout") + '</div><div class="card"><b>Linda</b><p class="fine" style="margin:4px 0 0">' + t("setVer") + ": " + esc(S.appVer || "web") + "</p></div>";
+    return h;
+  }
   function rpStatus(r) {
     var d = r.n ? S.shared.db[Shared.findKey(S.shared.db, r.n) || ""] : null;
     if (d && d.status === "confirmed") return ["green", t("rpConf")];
@@ -1705,12 +1776,14 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   }
   function renderNav() {
     var tabs = [["home", t("home"), I.home], ["act", t("navAct"), I.shield], ["fam", t("navFam"), I.users], ["ask", t("navAsk"), I.spark]];
-    $("#nav").innerHTML = tabs.map(function (x) { return '<button data-a="tab" data-v="' + x[0] + '"' + (S.tab === x[0] || ((S.tab === "about" || S.tab === "diag" || S.tab === "reports" || S.tab === "console") && x[0] === "home") ? ' aria-current="true"' : "") + ">" + x[2] + x[1] + "</button>"; }).join("");
+    $("#nav").innerHTML = tabs.map(function (x) { return '<button data-a="tab" data-v="' + x[0] + '"' + (S.tab === x[0] || ((S.tab === "about" || S.tab === "diag" || S.tab === "reports" || S.tab === "console" || S.tab === "settings") && x[0] === "home") ? ' aria-current="true"' : "") + ">" + x[2] + x[1] + "</button>"; }).join("");
   }
   function render(keepScroll) {
     var v = $("#view"), top = v.scrollTop, h;
+    $("#nav").style.display = S.ob ? "none" : "";
+    if (S.ob) { v.innerHTML = vOnboard(); v.scrollTop = 0; var ab = $("#askbar"); if (ab) ab.remove(); return; }
     try {
-      h = S.tab === "home" ? vHome() : S.tab === "act" ? (S.det ? vDetail() : vAct()) : S.tab === "ask" ? vAsk() : S.tab === "reports" ? vReports() : S.tab === "console" ? vConsole() : S.tab === "fam" ? vFam() : S.tab === "diag" ? vDiag() : vAbout();
+      h = S.tab === "home" ? vHome() : S.tab === "act" ? (S.det ? vDetail() : vAct()) : S.tab === "ask" ? vAsk() : S.tab === "settings" ? vSettings() : S.tab === "reports" ? vReports() : S.tab === "console" ? vConsole() : S.tab === "fam" ? vFam() : S.tab === "diag" ? vDiag() : vAbout();
     } catch (e) {
       S.lastErr = "screen: " + ((e && e.message) || e);
       h = '<div class="card"><h3>Something went wrong</h3><p class="fine">' + esc(S.lastErr) + '</p><div class="btns"><button class="btn p w" data-a="tab" data-v="home">Home</button><button class="btn w" data-a="diag">' + t("diag") + "</button></div></div>";
@@ -1860,7 +1933,19 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     return M.scan(text, { db: S.shared.db, contacts: CONTACTS });
   }
   function act(a, v, el) {
-    if (a === "goflag") { S.tab = "act"; S.det = null; S.actTab = "alerts"; render(); }
+    if (a === "obnext") { S.ob = Math.min(3, S.ob + 1); render(); }
+    else if (a === "obgo" || a === "obskip") { S.ob = 0; try { localStorage.setItem("linda_onboarded", "1"); } catch (e) {} render(); if (a === "obgo" && SMS()) act("livego"); }
+    else if (a === "trust") { var tm = msgById(v); if (tm && !isTrusted(tm.from)) { S.trusted.push({ k: trustKey(tm.from), label: nameOf(tm.from) }); saveTrusted(); scanCache = {}; rebuildLiveEvents(); S.det = null; toast(t("trustDone")); render(true); } }
+    else if (a === "untrust") { S.trusted.splice(+v, 1); saveTrusted(); scanCache = {}; rebuildLiveEvents(); toast(t("trustRemoved")); render(true); }
+    else if (a === "clearsent") { if (window.confirm(t("setClearQ"))) { S.sent = []; S.reports = 0; saveSent(); toast(t("setCleared")); render(true); } }
+    else if (a === "wipe") {
+      if (window.confirm(t("setWipeQ"))) {
+        try { var sm = SMS(); if (sm && sm.syncState) sm.syncState({ enabled: false, db: "{}", trusted: "[]" }); } catch (e) {}
+        try { Object.keys(localStorage).forEach(function (k) { if (/^linda/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+        setTimeout(function () { location.reload(); }, 250);
+      }
+    }
+    else if (a === "goflag") { S.tab = "act"; S.det = null; S.actTab = "alerts"; render(); }
     else if (a === "cnon") { var cc = ($("#cnCode") || {}).value || ""; if (!Relay.valid(cc)) { toast(t("cnBadCode")); return; } Relay.setRoom(cc); startRelay(); render(); }
     else if (a === "cnoff") { Relay.close(); Relay.setRoom(""); S.rstat = "off"; render(); }
     else if (a === "cntest") { Relay.send("app", { k: "hello" }).then(function (ok) { toast(ok ? t("cnTested") : t("cnBad")); }); }
@@ -1952,6 +2037,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   window.addEventListener("unhandledrejection", function (e) { S.lastErr = "promise: " + ((e.reason && e.reason.message) || e.reason); });
   function tick() { var d = new Date(), el = $("#clk"); if (el) el.textContent = Shared.fmtTime(d.getTime()); }
   tick(); setInterval(tick, 30000);
+  try { var sm0 = SMS(); if (sm0 && sm0.appInfo) sm0.appInfo().then(function (r) { S.appVer = (r && r.version) || ""; }).catch(function () {}); } catch (e) {}
   (function () { var m = /[?&]room=([A-Za-z0-9]+)/.exec(location.search); if (m && Relay.valid(m[1])) Relay.setRoom(m[1]); })();
   startRelay();
   render(); renderOv(); initNative(); initLive();

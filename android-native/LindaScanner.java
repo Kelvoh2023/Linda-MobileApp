@@ -24,6 +24,7 @@ final class LindaScanner {
     static final String PREFS = "linda_native";
     private static QuickJs js;
     private static String dbLoaded = "";
+    private static String trustedLoaded = "";
     private static long contactsAt = 0;
 
     private LindaScanner() {}
@@ -35,8 +36,9 @@ final class LindaScanner {
             if (js == null) {
                 js = QuickJs.create();
                 js.evaluate(readAsset(ctx, "linda/model.js"), "model.js");
-                js.evaluate("var __db = {}; var __contacts = [];", "init.js");
+                js.evaluate("var __db = {}; var __contacts = []; var __trusted = {};", "init.js");
                 dbLoaded = "";
+                trustedLoaded = "";
                 contactsAt = 0;
             }
             String db = sp.getString("db", "{}");
@@ -46,6 +48,13 @@ final class LindaScanner {
                 js.evaluate("__db = " + clean + ";", "db.js");
                 dbLoaded = db;
             }
+            String trusted = sp.getString("trusted", "[]");
+            if (!trusted.equals(trustedLoaded)) {
+                String arr = "[]";
+                try { arr = new JSONArray(trusted).toString(); } catch (Exception e) { /* keep empty */ }
+                js.evaluate("__trusted = {}; (" + arr + ").forEach(function(k){__trusted[k]=1;});", "trusted.js");
+                trustedLoaded = trusted;
+            }
             long now = System.currentTimeMillis();
             if (now - contactsAt > 600000L) {
                 js.evaluate("__contacts = " + readContacts(ctx) + ";", "contacts.js");
@@ -53,6 +62,9 @@ final class LindaScanner {
             }
             String lang = "sw".equals(sp.getString("lang", "en")) ? "sw" : "en";
             String script = "(function(){"
+                + "var s0=" + JSONObject.quote(sender == null ? "" : sender) + ";"
+                + "var k0=/\\d{7}/.test(s0)?LindaModel.normNum(s0):s0.toUpperCase();"
+                + "if(__trusted[k0])return JSON.stringify({level:'ok',score:0,reasons:[],texts:[]});"
                 + "var r=LindaModel.scan(" + JSONObject.quote(body == null ? "" : body)
                 + ",{sender:" + JSONObject.quote(sender == null ? "" : sender) + ",db:__db,contacts:__contacts});"
                 + "var L=" + JSONObject.quote(lang) + ";"

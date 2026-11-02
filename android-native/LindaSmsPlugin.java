@@ -40,6 +40,40 @@ public class LindaSmsPlugin extends Plugin {
 
     static volatile LindaSmsPlugin instance;
     static volatile boolean foreground = false;
+    static volatile String launchAddr = null;
+    static volatile long launchDate = 0;
+
+    /** Remember which Linda notification the person tapped, so the app can open that message. */
+    static void setLaunch(Intent i) {
+        if (i != null && i.hasExtra("linda_addr")) {
+            launchAddr = i.getStringExtra("linda_addr");
+            launchDate = i.getLongExtra("linda_date", 0);
+            i.removeExtra("linda_addr");
+            i.removeExtra("linda_date");
+        }
+    }
+
+    @PluginMethod
+    public void takeLaunch(PluginCall call) {
+        JSObject ret = new JSObject();
+        if (launchAddr != null) {
+            ret.put("address", launchAddr);
+            ret.put("date", launchDate);
+            launchAddr = null;
+        }
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void appInfo(PluginCall call) {
+        JSObject ret = new JSObject();
+        try {
+            ret.put("version", getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0).versionName);
+        } catch (Exception e) {
+            ret.put("version", "");
+        }
+        call.resolve(ret);
+    }
 
     @Override
     public void load() {
@@ -138,6 +172,8 @@ public class LindaSmsPlugin extends Plugin {
         if (db != null) e.putString("db", db);
         String lang = call.getString("lang");
         if (lang != null) e.putString("lang", lang);
+        String trusted = call.getString("trusted");
+        if (trusted != null) e.putString("trusted", trusted);
         e.apply();
         call.resolve();
     }
