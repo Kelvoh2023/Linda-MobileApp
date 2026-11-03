@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Linda</title>
 <meta name="theme-color" content="#127A43">
+<script>try{var __t=localStorage.getItem("linda_theme");if(__t==="dark"||__t==="light")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
@@ -15,9 +16,19 @@
 :root{
   --page:#E6EDE7; --bg:#F6F8F5; --card:#FFFFFF; --ink:#12201A; --muted:#5E6E65; --line:#DDE4DE;
   --green:#127A43; --green-soft:#DDF1E4; --red:#C5302B; --red-soft:#FBE3E1; --amber:#8A5F08; --amber-soft:#FBF0D5;
+  --brand:#127A43; --red-fill:#C5302B; --blue:#1A5FB4; --blue-soft:#E1ECFA; --ok-line:#A7D9B9;
   --f-display:"Bricolage Grotesque","Trebuchet MS",sans-serif; --f-body:"Figtree","Segoe UI",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
   color-scheme:light;
 }
+/* Dark mode: follows the phone unless the person picks Light or Dark in the menu. */
+:root[data-theme="dark"]{
+  --page:#070B09; --bg:#0E1511; --card:#16201A; --ink:#E8EFEA; --muted:#9BAEA2; --line:#26332B;
+  --green:#4CC083; --green-soft:#153324; --red:#FF7A72; --red-soft:#3A1816; --amber:#E3B24E; --amber-soft:#35290C;
+  --brand:#1F8A55; --red-fill:#C5302B; --blue:#8DBAF2; --blue-soft:#14263D; --ok-line:#2C5E43; color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#070B09; --bg:#0E1511; --card:#16201A; --ink:#E8EFEA; --muted:#9BAEA2; --line:#26332B;
+  --green:#4CC083; --green-soft:#153324; --red:#FF7A72; --red-soft:#3A1816; --amber:#E3B24E; --amber-soft:#35290C;
+  --brand:#1F8A55; --red-fill:#C5302B; --blue:#8DBAF2; --blue-soft:#14263D; --ok-line:#2C5E43; color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{background:var(--page);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
@@ -43,27 +54,30 @@ svg.i{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke
 .hd h2{font-size:24px;font-weight:800;letter-spacing:-.02em;flex:1}
 .gear{width:36px;height:36px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;flex:none;padding:0;cursor:pointer}
 .ob{display:flex;flex-direction:column;gap:14px;min-height:100%;justify-content:center;padding:8px 4px}
-.ob .big{width:84px;height:84px;border-radius:26px;background:var(--green);color:#fff;display:grid;place-items:center}
+.ob .big{width:84px;height:84px;border-radius:26px;background:var(--brand);color:#fff;display:grid;place-items:center}
 .ob .big svg{width:46px;height:46px}
 .ob h1{font-size:28px;line-height:1.1;margin:6px 0 0;letter-spacing:-.02em}
 .ob p{margin:0;font-size:15px;color:var(--muted)}
 .ob ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
 .ob li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
 .ob li svg{flex:none;color:var(--green);width:20px;height:20px;margin-top:2px}
-.dots{display:flex;gap:6px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--green);width:22px;border-radius:6px}
-.logo{width:36px;height:36px;border-radius:12px;background:var(--green);color:#fff;display:grid;place-items:center;flex:none}
+.dots{display:flex;gap:6px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--brand);width:22px;border-radius:6px}
+.msheet{display:flex;flex-direction:column;gap:4px}
+.msheet .row{margin:0}
+.msheet .seg{margin:4px 0 8px}
+.logo{width:36px;height:36px;border-radius:12px;background:var(--brand);color:#fff;display:grid;place-items:center;flex:none}
 .pill-btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;display:inline-flex;gap:6px;align-items:center}
 .pill-btn b{color:var(--green)}
 .lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden}
 .lang button{border:0;background:none;padding:6px 10px;font-size:12px;font-weight:700;color:var(--muted)}
-.lang button[aria-pressed="true"]{background:var(--green);color:#fff}
+.lang button[aria-pressed="true"]{background:var(--brand);color:#fff}
 
 .nav{display:flex;border-top:1px solid var(--line);background:var(--card);padding-bottom:env(safe-area-inset-bottom,0px)}
 .nav button{flex:1;border:0;background:none;padding:9px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted)}
 .nav button[aria-current="true"]{color:var(--green)}
 .nav svg{width:22px;height:22px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
-.status{background:var(--green);color:#fff;border:0;display:flex;flex-direction:column;gap:6px}
+.status{background:var(--brand);color:#fff;border:0;display:flex;flex-direction:column;gap:6px}
 .status h3{font-size:19px;font-weight:800}
 .status p{margin:0;font-size:13px;opacity:.92}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#9CF0BF;margin-right:6px}
@@ -84,7 +98,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke
 .row.good .av{background:var(--green-soft);color:var(--green)}
 button.row{cursor:pointer}
 .tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-top:4px}
-.tag.red{background:var(--red);color:#fff}
+.tag.red{background:var(--red-fill);color:#fff}
 .tag.green{background:var(--green-soft);color:var(--green)}
 .tag.amber{background:var(--amber-soft);color:var(--amber)}
 .tag.grey{background:var(--line);color:var(--muted)}
@@ -94,7 +108,7 @@ button.row{cursor:pointer}
 .vd{border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:9px}
 .vd.scam{background:var(--red-soft);border:1px solid var(--red)}
 .vd.caution{background:var(--amber-soft);border:1px solid #E5B13C}
-.vd.ok{background:var(--green-soft);border:1px solid #A7D9B9}
+.vd.ok{background:var(--green-soft);border:1px solid var(--ok-line)}
 .vd h3{font-size:18px;font-weight:800;display:flex;gap:8px;align-items:center}
 .vd.scam h3{color:var(--red)} .vd.caution h3{color:var(--amber)} .vd.ok h3{color:var(--green)}
 .vd ul{margin:0;padding-left:18px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}
@@ -103,14 +117,14 @@ button.row{cursor:pointer}
 .words{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:10px 14px;font-weight:700;font-size:13px;color:var(--ink)}
-.btn.p{background:var(--green);color:#fff;border-color:var(--green)}
-.btn.r{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.r{background:var(--red-fill);color:#fff;border-color:var(--red-fill)}
 .btn.w{flex:1}
 .btn[disabled]{opacity:.55;cursor:default}
 
 .chat{display:flex;flex-direction:column;gap:10px;flex:1}
 .bub{max-width:92%;padding:10px 12px;border-radius:16px;font-size:13.5px;overflow-wrap:anywhere}
-.bub.me{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:4px}
+.bub.me{align-self:flex-end;background:var(--brand);color:#fff;border-bottom-right-radius:4px}
 .bub.li{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px;width:92%}
 .bub.li.plain{width:auto}
 .bub .vd{border:0;padding:0;background:none!important}
@@ -118,7 +132,7 @@ button.row{cursor:pointer}
 .sugg button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:600;color:var(--ink);text-align:left}
 .askbar{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--line);background:var(--card)}
 .askbar input{flex:1;min-width:0;border:1px solid var(--line);border-radius:999px;padding:10px 14px;font:inherit;font-size:14px;background:var(--bg);color:var(--ink)}
-.askbar button{border:0;background:var(--green);color:#fff;border-radius:50%;width:40px;height:40px;display:grid;place-items:center;flex:none}
+.askbar button{border:0;background:var(--brand);color:#fff;border-radius:50%;width:40px;height:40px;display:grid;place-items:center;flex:none}
 
 .layer{display:flex;gap:12px;align-items:flex-start}
 .layer .n{width:28px;height:28px;border-radius:9px;background:var(--green-soft);color:var(--green);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;flex:none}
@@ -171,13 +185,13 @@ a.link{color:var(--green);font-weight:700}
 .demo-list{display:flex;flex-direction:column;gap:8px}
 .demo-list button{border:1px solid var(--line);background:var(--bg);border-radius:14px;padding:11px 12px;text-align:left;font-weight:600;font-size:14px;display:flex;gap:10px;align-items:center}
 .demo-list button b{font-family:var(--f-mono);color:var(--green);font-size:12px}
-.toast{position:absolute;left:18px;right:18px;bottom:78px;background:#17211B;color:#fff;border-radius:14px;padding:11px 14px;font-size:13px;font-weight:600;text-align:center;animation:rise .25s ease;z-index:30}
-.tag.blue{background:#E1ECFA;color:#1A5FB4}
+.toast{position:absolute;left:18px;right:18px;bottom:78px;border:1px solid #2E3D34;background:#17211B;color:#fff;border-radius:14px;padding:11px 14px;font-size:13px;font-weight:600;text-align:center;animation:rise .25s ease;z-index:30}
+.tag.blue{background:var(--blue-soft);color:var(--blue)}
 .badge.blue{background:#2B6CC4;color:#fff}
 .row.sos{border-color:var(--red);background:var(--red-soft)}
 .row.sos .av{background:var(--red);color:#fff}
 .row.sos .tx p{white-space:normal}
-.btn.sos{background:var(--red);color:#fff;border-color:var(--red);width:100%;display:flex;gap:8px;align-items:center;justify-content:center;padding:11px 14px}
+.btn.sos{background:var(--red-fill);color:#fff;border-color:var(--red-fill);width:100%;display:flex;gap:8px;align-items:center;justify-content:center;padding:11px 14px}
 .opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .opts button{border:1px solid var(--green);background:var(--card);color:var(--green);border-radius:999px;padding:8px 13px;font-weight:700;font-size:13px;text-align:left}
 .opts button:hover{background:var(--green-soft)}
@@ -198,7 +212,7 @@ a.link{color:var(--green);font-weight:700}
 .lb:first-child{margin-top:0}
 .seg{display:flex;border:1px solid var(--line);border-radius:999px;background:var(--card);overflow:hidden}
 .seg button{flex:1;border:0;background:none;padding:9px 6px;font-size:13px;font-weight:700;color:var(--muted)}
-.seg button[aria-pressed="true"]{background:var(--green);color:#fff}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
 .sheet h3{display:flex;gap:8px;align-items:center}
 .sheet.amber h3{color:var(--amber)}
 .sheet.green h3{color:var(--green)}
@@ -228,7 +242,7 @@ button.logo{border:0;padding:0;cursor:pointer}
 .csh{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .csh b{color:var(--ink);font-size:12.5px}
 .csh small{margin-left:auto;font-size:11.5px}
-.sheet.blue h3{color:#1A5FB4}
+.sheet.blue h3{color:var(--blue)}
 .sheet.grey h3{color:var(--ink)}
 .notif small{display:block;font-size:11px;color:var(--muted);margin-bottom:1px}
 .nav button{font-size:10.5px}
@@ -546,7 +560,7 @@ var LindaModel = (function () {
       nosend:  { en: "Do not send money or reply.", sw: "Usitume pesa wala kujibu." },
       nopin:   { en: "Never share your PIN or any code.", sw: "Usishiriki PIN wala msimbo wowote." },
       fwd333:  { en: "Forward it to 333 so Safaricom can act.", sw: "Itume kwa 333 ili Safaricom ichukue hatua." },
-      block:   { en: "Block the sender.", sw: "Mzuie mtumaji." },
+      block:   { en: "Do not reply. Block the number in your messages app if you can.", sw: "Usijibu. Zuia namba hiyo kwenye programu yako ya jumbe ukiweza." },
       balance: { en: "Check your real balance with *334#.", sw: "Angalia salio lako halisi kwa *334#." },
       nolink:  { en: "Do not open the link. Use the official app or site.", sw: "Usifungue kiungo. Tumia programu au tovuti rasmi." },
       verify:  { en: "Verify through 100 or *234# before you act.", sw: "Thibitisha kupitia 100 au *234# kabla ya kuchukua hatua." },
@@ -1025,7 +1039,8 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
 <script>
 (function () {
   var M = LindaModel, FL = LindaFlow, I = {
-    gear: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>',
+    gear: '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></svg>',
+    more: '<svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
     shield: '<svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>',
     home: '<svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>',
     msg: '<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg>',
@@ -1108,7 +1123,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       s9: "Guardian's phone: what family sees",
       navAct: "Activity", navPay: "Pay", navFam: "Family", navAsk: "Ask", actTitle: "Activity", actSub: "What Linda checked and stopped for you.",
       actEmpty: "Nothing yet. Linda lists every scam it stops here.", seeAll: "See all activity",
-      obT1: "Welcome to Linda", obS1: "Safaricom's fraud knowledge, on your phone. Linda warns you about scam messages and calls before you act on them.",
+      menuT: "Menu", appear: "Appearance", thSystem: "System", thLight: "Light", thDark: "Dark", obT1: "Welcome to Linda", obS1: "Safaricom's fraud knowledge, on your phone. Linda warns you about scam messages and calls before you act on them.",
       obT2: "What Linda does", obA: "Warns you about scam texts, even when the app is closed", obB: "Labels callers: reported, in your contacts, or verified", obC: "Guides you step by step if you have been scammed",
       obT3: "Your messages stay on your phone", obS3: "Linda checks messages on this phone. Only the reports you choose to send go to Safaricom. Next, Android will ask to read your messages and contacts. Please allow it so Linda can protect you.",
       obNext: "Next", obGo: "Turn on protection", obStart: "Get started", obSkip: "Not now",
@@ -1199,7 +1214,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       s9: "Simu ya mlinzi: familia inaona nini",
       navAct: "Shughuli", navPay: "Lipa", navFam: "Familia", navAsk: "Uliza", actTitle: "Shughuli", actSub: "Kile Linda ilichokagua na kuzuia kwa ajili yako.",
       actEmpty: "Hakuna bado. Linda inaorodhesha kila ulaghai inaouzuia hapa.", seeAll: "Ona shughuli zote",
-      obT1: "Karibu Linda", obS1: "Maarifa ya Safaricom kuhusu ulaghai, kwenye simu yako. Linda inakuonya kuhusu jumbe na simu za ulaghai kabla hujachukua hatua.",
+      menuT: "Menyu", appear: "Mwonekano", thSystem: "Mfumo", thLight: "Mwanga", thDark: "Giza", obT1: "Karibu Linda", obS1: "Maarifa ya Safaricom kuhusu ulaghai, kwenye simu yako. Linda inakuonya kuhusu jumbe na simu za ulaghai kabla hujachukua hatua.",
       obT2: "Linda inafanya nini", obA: "Inakuonya kuhusu jumbe za ulaghai, hata programu ikiwa imefungwa", obB: "Inaweka lebo kwa wapigaji: walioripotiwa, walio kwenye anwani zako, au waliothibitishwa", obC: "Inakuongoza hatua kwa hatua ukitapeliwa",
       obT3: "Jumbe zako zinabaki kwenye simu yako", obS3: "Linda inakagua jumbe kwenye simu hii. Ni ripoti unazochagua kutuma tu ndizo huenda Safaricom. Kisha Android itaomba kusoma jumbe na anwani zako. Tafadhali ruhusu ili Linda ikulinde.",
       obNext: "Endelea", obGo: "Washa ulinzi", obStart: "Anza", obSkip: "Sio sasa",
@@ -1253,7 +1268,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     "Confirmed. KSh 200.00 sent to Mama Mboga."
   ];
 
-  var S = { ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
+  var S = { theme: "system", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
   var timers = [], taps = 0, tapT = 0;
   var $ = function (q) { return document.querySelector(q); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -1316,6 +1331,16 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* ---------- Send money check, Family Guardian ---------- */
   var G_DEF = { name: "Daniel (Son)", phone: "0712 555 303", protectedName: "Mama Wanjiku" };
   function fill2(str, o) { var k; for (k in o) str = str.split("{" + k + "}").join(o[k]); return str; }
+  /* ---------- light and dark mode ---------- */
+  try { var th0 = localStorage.getItem("linda_theme"); if (th0 === "light" || th0 === "dark") S.theme = th0; } catch (e) {}
+  function isDark() { return S.theme === "dark" || (S.theme !== "light" && !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)); }
+  function applyTheme() {
+    var root = document.documentElement;
+    if (S.theme === "light" || S.theme === "dark") root.setAttribute("data-theme", S.theme); else root.removeAttribute("data-theme");
+    var dark = isDark(), mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute("content", dark ? "#0E1511" : "#127A43");
+    try { var sb = nativePlugin("SystemBars"); if (sb && sb.setStyle) sb.setStyle({ style: dark ? "DARK" : "LIGHT" }).catch(function () {}); } catch (e) {}
+  }
+  try { if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (S.theme === "system") applyTheme(); }); } catch (e) {}
   /* ---------- first run, trusted senders ---------- */
   try { S.ob = localStorage.getItem("linda_onboarded") === "1" ? 0 : 1; S.trusted = JSON.parse(localStorage.getItem("linda_trusted") || "[]") || []; } catch (e) { S.ob = 0; }
   function trustKey(from) { var f = String(from || ""); return /\d{7}/.test(f) ? M.normNum(f) : f.toUpperCase(); }
@@ -1639,8 +1664,13 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* ---------- views ---------- */
   function header(title, withTools) {
     return '<div class="hd">' + (withTools ? '<button class="logo" data-a="logo" aria-label="Linda">' + I.shield + "</button>" : "") + "<h2>" + title + "</h2>" +
-      (withTools ? '<button class="gear" data-a="tab" data-v="settings" aria-label="' + t("setTitle") + '">' + I.gear + "</button>" : "") +
-      '<div class="lang" role="group" aria-label="Language"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">EN</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">SW</button></div></div>';
+      '<div class="lang" role="group" aria-label="Language"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">EN</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">SW</button></div>' +
+      '<button class="gear" data-a="menu" aria-label="' + t("menuT") + '">' + I.more + "</button></div>";
+  }
+  function themeSeg() {
+    return '<div class="seg" role="group" aria-label="' + t("appear") + '">' + [["system", "thSystem"], ["light", "thLight"], ["dark", "thDark"]].map(function (x) {
+      return '<button data-a="theme" data-v="' + x[0] + '" aria-pressed="' + (S.theme === x[0]) + '">' + t(x[1]) + "</button>";
+    }).join("") + "</div>";
   }
   function vHome() {
     var flagged = S.events.filter(function (e) { return evView(e).bad; }).length;
@@ -1674,6 +1704,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   function vSettings() {
     var h = '<button class="back" data-a="tab" data-v="home">' + I.back + " " + t("home") + "</button><h2>" + t("setTitle") + "</h2>";
     if (SMS()) h += '<div class="sec">' + t("setProt") + '</div><div class="card" style="display:flex;align-items:center;gap:10px"><span style="flex:1;font-weight:600">' + (S.live.on ? t("setLiveOn") : t("setLiveOff")) + '</span><button class="btn' + (S.live.on ? "" : " p") + '" data-a="' + (S.live.on ? "liveoff" : "livego") + '">' + (S.live.on ? t("setPause") : t("setResume")) + "</button></div>";
+    h += '<div class="sec">' + t("appear") + "</div>" + themeSeg();
     h += '<div class="sec">' + t("setLang") + '</div><div class="seg" role="group"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">English</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">Kiswahili</button></div>';
     h += '<div class="sec">' + t("setTrust") + "</div>" + (S.trusted.length ? S.trusted.map(function (x, i) {
       return '<div class="card" style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(x.label) + '</span><button class="btn" data-a="untrust" data-v="' + i + '">' + t("setRemove") + "</button></div>";
@@ -1808,6 +1839,14 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       h += '<div class="scrim" data-a="closesheet"></div><div class="sheet"><h3>' + t("demoTitle") + '</h3><p class="fine">' + t("demoSub") + '</p><div class="demo-list">' +
         [1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (n) { return '<button data-a="scn" data-v="' + n + '"><b>' + n + "</b>" + t("s" + n) + "</button>"; }).join("") +
         '</div><div class="btns"><a class="btn w link" style="text-align:center;text-decoration:none" href="dashboard.html">' + t("console") + '</a><button class="btn w" data-a="reset">' + t("reset") + '</button></div><button class="btn" data-a="closesheet">' + t("close") + "</button></div>";
+    }
+    if (S.sheet === "menu") {
+      h += '<div class="scrim" data-a="closesheet"></div><div class="sheet msheet"><h3>' + t("menuT") + "</h3>" +
+        '<button class="row" data-a="tab" data-v="settings"><div class="av">' + I.gear + '</div><div class="tx"><b>' + t("setTitle") + "</b></div></button>" +
+        '<div class="sec" style="margin:6px 0 0">' + t("appear") + "</div>" + themeSeg() +
+        '<button class="row" data-a="tab" data-v="reports"><div class="av">' + I.msg + '</div><div class="tx"><b>' + t("sent").replace(/^./, function (c) { return c.toUpperCase(); }) + "</b><p>" + S.reports + "</p></div></button>" +
+        '<button class="row" data-a="tab" data-v="console"><div class="av">' + I.shield + '</div><div class="tx"><b>' + t("cnRow") + "</b></div></button>" +
+        '<button class="row" data-a="tab" data-v="about"><div class="av">' + I.spark + '</div><div class="tx"><b>' + t("how") + "</b></div></button></div>";
     }
     if (o && o.type === "notif") h += '<button class="notif" data-a="opennotif"><div class="logo">' + I.alert + "</div><div><small>Linda · " + t("now") + "</small><b>" + esc(o.title) + "</b><span>" + esc(o.sub) + "</span></div></button>";
     if (o && o.type === "call") h += callSheet(o);
@@ -1949,7 +1988,9 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     else if (a === "cnon") { var cc = ($("#cnCode") || {}).value || ""; if (!Relay.valid(cc)) { toast(t("cnBadCode")); return; } Relay.setRoom(cc); startRelay(); render(); }
     else if (a === "cnoff") { Relay.close(); Relay.setRoom(""); S.rstat = "off"; render(); }
     else if (a === "cntest") { Relay.send("app", { k: "hello" }).then(function (ok) { toast(ok ? t("cnTested") : t("cnBad")); }); }
-    else if (a === "tab") { S.tab = v; S.det = null; render(); }
+    else if (a === "tab") { S.tab = v; S.det = null; S.sheet = null; render(); renderOv(); }
+    else if (a === "menu") { S.sheet = "menu"; renderOv(); }
+    else if (a === "theme") { S.theme = v; try { if (v === "system") localStorage.removeItem("linda_theme"); else localStorage.setItem("linda_theme", v); } catch (e) {} applyTheme(); render(true); renderOv(); }
     else if (a === "logo") { var nw = Date.now(); taps = nw - tapT < 1200 ? taps + 1 : 1; tapT = nw; if (taps >= 2) { taps = 0; S.sheet = "demo"; renderOv(); } }
     else if (a === "presenter") { S.sheet = "demo"; renderOv(); }
     else if (a === "lang") { S.lang = v; syncNative(); try { localStorage.setItem("linda_lang", v); } catch (e) {} render(true); renderOv(); }
@@ -2040,6 +2081,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   try { var sm0 = SMS(); if (sm0 && sm0.appInfo) sm0.appInfo().then(function (r) { S.appVer = (r && r.version) || ""; }).catch(function () {}); } catch (e) {}
   (function () { var m = /[?&]room=([A-Za-z0-9]+)/.exec(location.search); if (m && Relay.valid(m[1])) Relay.setRoom(m[1]); })();
   startRelay();
+  applyTheme();
   render(); renderOv(); initNative(); initLive();
   document.addEventListener("visibilitychange", function () { if (!document.hidden && S.live.on) loadInbox(true); });
 

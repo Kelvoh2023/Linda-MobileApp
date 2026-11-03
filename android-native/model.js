@@ -299,7 +299,7 @@ var LindaModel = (function () {
       nosend:  { en: "Do not send money or reply.", sw: "Usitume pesa wala kujibu." },
       nopin:   { en: "Never share your PIN or any code.", sw: "Usishiriki PIN wala msimbo wowote." },
       fwd333:  { en: "Forward it to 333 so Safaricom can act.", sw: "Itume kwa 333 ili Safaricom ichukue hatua." },
-      block:   { en: "Block the sender.", sw: "Mzuie mtumaji." },
+      block:   { en: "Do not reply. Block the number in your messages app if you can.", sw: "Usijibu. Zuia namba hiyo kwenye programu yako ya jumbe ukiweza." },
       balance: { en: "Check your real balance with *334#.", sw: "Angalia salio lako halisi kwa *334#." },
       nolink:  { en: "Do not open the link. Use the official app or site.", sw: "Usifungue kiungo. Tumia programu au tovuti rasmi." },
       verify:  { en: "Verify through 100 or *234# before you act.", sw: "Thibitisha kupitia 100 au *234# kabla ya kuchukua hatua." },
