@@ -54,7 +54,8 @@ public class LindaCallScreen extends CallScreeningService {
                     }
                     if ("scam".equals(level) && sp.getBoolean("silence", false)) resp.setSilenceCall(true);
                 }
-                if (!"none".equals(level) && !"contact".equals(level)) {
+                if ("none".equals(level)) level = "unknown";
+                if (!"contact".equals(level) && sp.getBoolean("calls", true)) {
                     notifyCall(this, number, level, hit, "sw".equals(sp.getString("lang", "en")));
                 }
             }
@@ -116,19 +117,25 @@ public class LindaCallScreen extends CallScreeningService {
             text = number + (sw
                 ? " imethibitishwa kuwa ya ulaghai" + (count > 0 ? " (wateja " + count + " wameripoti)" : "") + ". Usitoe PIN wala kutuma pesa."
                 : " is a confirmed scam number" + (count > 0 ? " (" + count + " customers reported it)" : "") + ". Do not share your PIN or send money.");
+        } else if ("unknown".equals(level)) {
+            title = sw ? "Linda: mpigaji asiyejulikana" : "Linda: unknown caller";
+            text = number + (sw ? " haipo kwenye orodha ya ulaghai. Ukihisi ni ulaghai, gusa uiripoti baada ya simu." : " is not on the fraud list. If it feels like a scam, tap to report it after the call.");
         } else {
             title = sw ? "Linda: kuwa mwangalifu na simu hii" : "Linda: be careful with this call";
             text = number + (sw
                 ? " imeripotiwa na wateja " + count + ". Usitoe PIN wala kutuma pesa."
                 : " was reported by " + count + " customers. Do not share your PIN or send money.");
         }
+        boolean quiet = "unknown".equals(level) || "verified".equals(level);
+        String ch = quiet ? CHANNEL + "-quiet" : CHANNEL;
         if (Build.VERSION.SDK_INT >= 26) {
-            nm.createNotificationChannel(new NotificationChannel(CHANNEL, "Caller labels", NotificationManager.IMPORTANCE_HIGH));
+            nm.createNotificationChannel(new NotificationChannel(ch, quiet ? "Caller labels (quiet)" : "Caller labels", quiet ? NotificationManager.IMPORTANCE_DEFAULT : NotificationManager.IMPORTANCE_HIGH));
         }
         Intent open = new Intent(ctx, MainActivity.class);
+        open.putExtra("linda_call", number == null ? "" : number);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pi = PendingIntent.getActivity(ctx, 7, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, CHANNEL) : new Notification.Builder(ctx);
+        PendingIntent pi = PendingIntent.getActivity(ctx, ("c" + norm(number)).hashCode(), open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, ch) : new Notification.Builder(ctx);
         b.setSmallIcon(R.drawable.ic_stat_linda)
             .setContentTitle(title)
             .setContentText(text)
@@ -136,7 +143,7 @@ public class LindaCallScreen extends CallScreeningService {
             .setCategory(Notification.CATEGORY_CALL)
             .setContentIntent(pi)
             .setAutoCancel(true);
-        if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(120000L);
+        if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(quiet ? 600000L : 300000L);
         nm.notify(("call" + norm(number)).hashCode(), b.build());
     }
 }

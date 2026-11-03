@@ -1379,7 +1379,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       setWipe: "Delete all Linda data on this phone", setWipeQ: "Delete everything Linda stored on this phone? This turns protection off and restarts Linda.",
       setAbout: "About", setVer: "Version", setMore: "More", trustBtn: "Trust this sender", trustDone: "Done. Linda will not flag messages from this sender.", trustRemoved: "Removed from trusted senders",
       rpTitle: "Reports you sent", rpEmpty: "You have not sent any reports yet. When you report a scam, it is listed here.", rpLocal: "Saved on this phone", rpSent: "Sent. Under review", rpConf: "Confirmed by Safaricom",
-      rpCase: "Scam case", setCalls: "Caller labels", setCallsOn: "Caller labels are on", setCallsOff: "Caller labels are off", setCallsGo: "Turn on", setCallsNote: "Linda tells you who is calling before you answer: verified Safaricom numbers, and numbers reported as scams. It never blocks a call and never reads your calls. Android will ask you to choose Linda as your caller ID app.", setSilence: "Ring silently for confirmed scam numbers", setRegion: "Your county", setRegionNone: "Not set", setRegionNote: "Shared with the fraud team with your reports so they can see where scams are spreading. Your name and number are never sent.", setServer: "Linda server", setSrvOn: "Connected. Updated", setSrvOff: "Cannot reach the server. Linda still protects you using the last list it saved.", setSrvWait: "Connecting...", setSrvNow: "Update now", rpConnect: "Connect to the fraud console to share reports with the team.",
+      rpCase: "Scam case", yes: "Yes", no: "No", setNotif: "Notifications allowed", setCallTest: "Send a test label", setCallTestSent: "Test label sent. Pull down your notifications.", callsTitle: "Recent calls", callsSub: "Check and report a number that called you", callsNote: "Calls still ring and are answered in your normal phone app. Come here after a call to check the number or report it as a scam.", callsLast: "Last caller you tapped", callsTapped: "From the Linda notification", callsPerm: "Allow Linda to see your recent calls (only the number, type and time). They stay on this phone until you tap Report.", callsAllow: "Allow", callsNone: "No recent calls found.", callsRecent: "Latest first", callsIn: "Incoming", callsMissed: "Missed", callsRej: "Declined", setCalls: "Caller labels", setCallsOn: "Caller labels are on", setCallsOff: "Caller labels are off", setCallsGo: "Turn on", setCallsNote: "Linda tells you who is calling before you answer: verified Safaricom numbers, and numbers reported as scams. It never blocks a call and never reads your calls. Android will ask you to choose Linda as your caller ID app.", setSilence: "Ring silently for confirmed scam numbers", setRegion: "Your county", setRegionNone: "Not set", setRegionNote: "Shared with the fraud team with your reports so they can see where scams are spreading. Your name and number are never sent.", setServer: "Linda server", setSrvOn: "Connected. Updated", setSrvOff: "Cannot reach the server. Linda still protects you using the last list it saved.", setSrvWait: "Connecting...", setSrvNow: "Update now", rpConnect: "Connect to the fraud console to share reports with the team.",
       cnTitle: "Fraud console", cnIntro: "The fraud console is the screen the Safaricom team uses. Open it on another device, then type the 6-letter code it shows. After that, every report you send here appears there, and numbers they confirm come back to this phone.",
       cnCode: "Code from the console", cnConnect: "Connect", cnDisconnect: "Disconnect", cnOn: "Connected to the fraud console", cnWait: "Connecting...", cnOff: "Not connected", cnBad: "Cannot reach the console. Check your internet.", cnBadCode: "The code has 6 letters or numbers.",
       cnNote: "Demo only. Reports travel through a free public relay using your secret code. A real Linda uses Safaricom's secure servers.", cnRow: "Fraud console", cnRowSub: "Connect this phone to the console", cnOpen: "Console address", cnTest: "Send a test", cnTested: "Test sent",
@@ -1470,7 +1470,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       setWipe: "Futa data yote ya Linda kwenye simu hii", setWipeQ: "Futa kila kitu ambacho Linda imehifadhi kwenye simu hii? Hii itazima ulinzi na kuwasha Linda upya.",
       setAbout: "Kuhusu", setVer: "Toleo", setMore: "Zaidi", trustBtn: "Amini mtumaji huyu", trustDone: "Sawa. Linda haitaweka alama kwenye jumbe za mtumaji huyu.", trustRemoved: "Ameondolewa kwenye watumaji unaowaamini",
       rpTitle: "Ripoti ulizotuma", rpEmpty: "Bado hujatuma ripoti yoyote. Ukiripoti ulaghai, utaorodheshwa hapa.", rpLocal: "Imehifadhiwa kwenye simu hii", rpSent: "Imetumwa. Inakaguliwa", rpConf: "Imethibitishwa na Safaricom",
-      rpCase: "Kesi ya ulaghai", setCalls: "Lebo za wapigaji", setCallsOn: "Lebo za wapigaji zimewashwa", setCallsOff: "Lebo za wapigaji zimezimwa", setCallsGo: "Washa", setCallsNote: "Linda hukuambia anayepiga kabla ya kupokea: namba za Safaricom zilizothibitishwa, na namba zilizoripotiwa kuwa za ulaghai. Haizuii simu wala kusikiliza simu zako. Android itakuuliza uchague Linda kama programu yako ya kitambulisho cha mpigaji.", setSilence: "Lia kimya kwa namba za ulaghai zilizothibitishwa", setRegion: "Kaunti yako", setRegionNone: "Haijawekwa", setRegionNote: "Hutumwa kwa timu ya ulaghai pamoja na ripoti zako ili waone ulaghai unapoenea. Jina na namba yako havitumwi kamwe.", setServer: "Seva ya Linda", setSrvOn: "Imeunganishwa. Imesasishwa", setSrvOff: "Seva haipatikani. Linda bado inakulinda kwa orodha ya mwisho iliyohifadhiwa.", setSrvWait: "Inaunganisha...", setSrvNow: "Sasisha sasa", rpConnect: "Unganisha kwenye kituo cha ulaghai ili kushiriki ripoti na timu.",
+      rpCase: "Kesi ya ulaghai", yes: "Ndiyo", no: "Hapana", setNotif: "Arifa zimeruhusiwa", setCallTest: "Tuma lebo ya majaribio", setCallTestSent: "Lebo ya majaribio imetumwa. Telezesha arifa zako chini.", callsTitle: "Simu za hivi karibuni", callsSub: "Angalia na uripoti namba iliyokupigia", callsNote: "Simu bado zinalia na kupokelewa kwenye programu yako ya kawaida ya simu. Rudi hapa baada ya simu kuangalia namba au kuiripoti kuwa ya ulaghai.", callsLast: "Mpigaji wa mwisho uliyegusa", callsTapped: "Kutoka kwenye arifa ya Linda", callsPerm: "Ruhusu Linda kuona simu zako za hivi karibuni (namba, aina na muda tu). Hubaki kwenye simu hii hadi ugonge Ripoti.", callsAllow: "Ruhusu", callsNone: "Hakuna simu za hivi karibuni.", callsRecent: "Mpya kwanza", callsIn: "Iliyoingia", callsMissed: "Ambayo haikupokelewa", callsRej: "Iliyokataliwa", setCalls: "Lebo za wapigaji", setCallsOn: "Lebo za wapigaji zimewashwa", setCallsOff: "Lebo za wapigaji zimezimwa", setCallsGo: "Washa", setCallsNote: "Linda hukuambia anayepiga kabla ya kupokea: namba za Safaricom zilizothibitishwa, na namba zilizoripotiwa kuwa za ulaghai. Haizuii simu wala kusikiliza simu zako. Android itakuuliza uchague Linda kama programu yako ya kitambulisho cha mpigaji.", setSilence: "Lia kimya kwa namba za ulaghai zilizothibitishwa", setRegion: "Kaunti yako", setRegionNone: "Haijawekwa", setRegionNote: "Hutumwa kwa timu ya ulaghai pamoja na ripoti zako ili waone ulaghai unapoenea. Jina na namba yako havitumwi kamwe.", setServer: "Seva ya Linda", setSrvOn: "Imeunganishwa. Imesasishwa", setSrvOff: "Seva haipatikani. Linda bado inakulinda kwa orodha ya mwisho iliyohifadhiwa.", setSrvWait: "Inaunganisha...", setSrvNow: "Sasisha sasa", rpConnect: "Unganisha kwenye kituo cha ulaghai ili kushiriki ripoti na timu.",
       cnTitle: "Kituo cha ulaghai", cnIntro: "Kituo cha ulaghai ni skrini inayotumiwa na timu ya Safaricom. Kifungue kwenye kifaa kingine, kisha andika msimbo wa herufi 6 unaoonyeshwa. Baada ya hapo, kila ripoti unayotuma itaonekana huko, na namba wanazothibitisha zitarudi kwenye simu hii.",
       cnCode: "Msimbo kutoka kituo", cnConnect: "Unganisha", cnDisconnect: "Tenganisha", cnOn: "Imeunganishwa na kituo cha ulaghai", cnWait: "Inaunganisha...", cnOff: "Haijaunganishwa", cnBad: "Kituo hakipatikani. Angalia intaneti yako.", cnBadCode: "Msimbo una herufi au tarakimu 6.",
       cnNote: "Kwa majaribio tu. Ripoti hupitia mfumo wa umma wa bure kwa kutumia msimbo wako wa siri. Linda halisi hutumia seva salama za Safaricom.", cnRow: "Kituo cha ulaghai", cnRowSub: "Unganisha simu hii na kituo", cnOpen: "Anwani ya kituo", cnTest: "Tuma jaribio", cnTested: "Jaribio limetumwa",
@@ -1514,7 +1514,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     "Confirmed. KSh 200.00 sent to Mama Mboga."
   ];
 
-  var S = { callRole: null, silence: false, region: "", cstat: "off", theme: "light", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
+  var S = { cnotif: null, calls: { list: [], denied: false, busy: false }, lastCall: "", callRole: null, silence: false, region: "", cstat: "off", theme: "light", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
   var timers = [], taps = 0, tapT = 0;
   var $ = function (q) { return document.querySelector(q); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -1795,6 +1795,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   function consumeLaunch() {
     var sms = SMS(); if (!sms || !sms.takeLaunch) return;
     sms.takeLaunch().then(function (r) {
+      if (r && r.call) { S.ob = 0; S.lastCall = String(r.call); S.tab = "calls"; S.sheet = null; render(); loadCalls(false); }
       if (!r || !r.address) return;
       var best = null, bd = 1e15, nn = M.normNum(r.address);
       S.live.msgs.forEach(function (m) {
@@ -1821,6 +1822,8 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* Caller labels: is Linda the phone's caller-ID app yet? */
   function refreshCallRole() {
     var sms = SMS(); if (!sms || !sms.callScreeningStatus) return;
+    if (sms.notifStatus) sms.notifStatus().then(function (r) { S.cnotif = !!r.granted; if (S.tab === "settings") render(true); }).catch(function () {});
+    consumeLaunch();
     sms.callScreeningStatus().then(function (r) { S.callRole = { supported: !!r.supported, held: !!r.held }; if (S.tab === "settings") render(true); }).catch(function () {});
   }
   document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshCallRole(); });
@@ -1982,7 +1985,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (SMS()) h += '<div class="sec">' + t("setProt") + '</div><div class="card" style="display:flex;align-items:center;gap:10px"><span style="flex:1;font-weight:600">' + (S.live.on ? t("setLiveOn") : t("setLiveOff")) + '</span><button class="btn' + (S.live.on ? "" : " p") + '" data-a="' + (S.live.on ? "liveoff" : "livego") + '">' + (S.live.on ? t("setPause") : t("setResume")) + "</button></div>";
     h += '<div class="sec">' + t("appear") + "</div>" + themeSeg();
     h += '<div class="sec">' + t("setLang") + '</div><div class="seg" role="group"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">English</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">Kiswahili</button></div>';
-    if (SMS() && S.callRole && S.callRole.supported) h += '<div class="sec">' + t("setCalls") + '</div><div class="card"><div style="display:flex;align-items:center;gap:10px"><span style="flex:1;font-weight:600">' + (S.callRole.held ? t("setCallsOn") : t("setCallsOff")) + '</span>' + (S.callRole.held ? "" : '<button class="btn p" data-a="callrole">' + t("setCallsGo") + "</button>") + '</div><p class="fine" style="margin:6px 0 0">' + t("setCallsNote") + "</p>" + (S.callRole.held ? '<div style="display:flex;align-items:center;gap:10px;margin-top:10px"><span style="flex:1">' + t("setSilence") + '</span><button class="btn' + (S.silence ? "" : " p") + '" data-a="silence">' + (S.silence ? t("setPause") : t("setResume")) + "</button></div>" : "") + "</div>";
+    if (SMS() && S.callRole && S.callRole.supported) h += '<div class="sec">' + t("setCalls") + '</div><div class="card"><div style="display:flex;align-items:center;gap:10px"><span style="flex:1;font-weight:600">' + (S.callRole.held ? t("setCallsOn") : t("setCallsOff")) + '</span>' + (S.callRole.held ? "" : '<button class="btn p" data-a="callrole">' + t("setCallsGo") + "</button>") + '</div><div style="display:flex;align-items:center;gap:10px;margin-top:10px"><span style="flex:1">' + t("setNotif") + ": <b>" + (S.cnotif ? t("yes") : t("no")) + "</b></span>" + (S.cnotif ? "" : '<button class="btn p" data-a="notifallow">' + t("setCallsGo") + "</button>") + '</div><div class="btns" style="margin-top:10px"><button class="btn w" data-a="calltest">' + t("setCallTest") + '</button></div><p class="fine" style="margin:6px 0 0">' + t("setCallsNote") + "</p>" + (S.callRole.held ? '<div style="display:flex;align-items:center;gap:10px;margin-top:10px"><span style="flex:1">' + t("setSilence") + '</span><button class="btn' + (S.silence ? "" : " p") + '" data-a="silence">' + (S.silence ? t("setPause") : t("setResume")) + "</button></div>" : "") + "</div>";
     h += '<div class="sec">' + t("setRegion") + '</div><div class="card"><select class="fld" id="regionSel" aria-label="' + t("setRegion") + '"><option value="">' + t("setRegionNone") + "</option>" + COUNTIES.map(function (c) { return '<option' + (S.region === c ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + '</select><p class="fine" style="margin:6px 0 0">' + t("setRegionNote") + "</p></div>";
     if (Cloud.on()) h += '<div class="sec">' + t("setServer") + '</div><div class="card" style="display:flex;align-items:center;gap:10px"><span class="dot" style="' + (S.cstat === "live" ? "" : "background:var(--muted)") + '"></span><span style="flex:1">' + (S.cstat === "live" ? t("setSrvOn") + " " + Shared.fmtTime(S.shared.syncedAt) : S.cstat === "offline" ? t("setSrvOff") : t("setSrvWait")) + '</span><button class="btn" data-a="cloudsync">' + t("setSrvNow") + "</button></div>";
     h += '<div class="sec">' + t("setTrust") + "</div>" + (S.trusted.length ? S.trusted.map(function (x, i) {
@@ -1997,6 +2000,32 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (d && d.status === "confirmed") return ["green", t("rpConf")];
     if (r.relay) return ["amber", t("rpSent")];
     return ["grey", t("rpLocal")];
+  }
+  function loadCalls(ask) {
+    var sms = SMS(); if (!sms || !sms.getCalls) return;
+    S.calls.busy = true;
+    sms.getCalls({ ask: !!ask }).then(function (r) {
+      S.calls.busy = false; S.calls.denied = !!r.denied; S.calls.list = r.calls || [];
+      if (S.tab === "calls") render(true);
+    }).catch(function () { S.calls.busy = false; if (S.tab === "calls") render(true); });
+  }
+  function callRow(n, name, ts, kind) {
+    var done = S.done["c" + n], c = callInfo(n);
+    return '<div class="card" style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(name || n) + "</b>" + tagFor(n) + '</div><div class="fine" style="margin:0">' + (name ? esc(n) + " · " : "") + esc(kind) + (ts ? " · " + fmtAgo(ts) : "") + "</div>" +
+      (c.level === "contact" || c.level === "ok" ? "" : '<div class="btns"><button class="btn r w" data-a="reportcall" data-v="' + esc(n) + '"' + (done ? " disabled" : "") + ">" + (done ? t("reported") : t("repNum")) + "</button></div>") + "</div>";
+  }
+  function vCalls() {
+    var h = '<button class="back" data-a="tab" data-v="home">' + I.back + " " + t("home") + "</button><h2>" + t("callsTitle") + '</h2><p class="fine">' + t("callsNote") + "</p>";
+    if (S.lastCall) h += '<div class="sec">' + t("callsLast") + "</div>" + callRow(S.lastCall, "", 0, t("callsTapped"));
+    if (S.calls.denied) return h + '<div class="card"><p style="margin:0 0 10px;font-size:14px">' + t("callsPerm") + '</p><button class="btn p w" data-a="callsallow">' + t("callsAllow") + "</button></div>";
+    if (S.calls.busy && !S.calls.list.length) return h + '<p class="fine">...</p>';
+    if (!S.calls.list.length) return h + '<div class="card"><p class="fine" style="margin:0">' + t("callsNone") + "</p></div>";
+    var K = { 1: t("callsIn"), 3: t("callsMissed"), 5: t("callsRej") };
+    return h + '<div class="sec">' + t("callsRecent") + "</div>" + S.calls.list.map(function (x) { return callRow(x.number, x.name, x.date, K[x.type] || ""); }).join("");
+  }
+  function fmtAgo(ts) {
+    var d = new Date(ts), n = new Date();
+    return d.toDateString() === n.toDateString() ? Shared.fmtTime(ts) : d.toLocaleDateString(S.lang === "sw" ? "sw-KE" : "en-KE", { day: "numeric", month: "short" }) + " " + Shared.fmtTime(ts);
   }
   function vReports() {
     var h = '<button class="back" data-a="tab" data-v="home">' + I.back + " " + t("home") + "</button><h2>" + t("rpTitle") + "</h2>";
@@ -2082,14 +2111,14 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   }
   function renderNav() {
     var tabs = [["home", t("home"), I.home], ["act", t("navAct"), I.shield], ["fam", t("navFam"), I.users], ["ask", t("navAsk"), I.spark]];
-    $("#nav").innerHTML = tabs.map(function (x) { return '<button data-a="tab" data-v="' + x[0] + '"' + (S.tab === x[0] || ((S.tab === "about" || S.tab === "diag" || S.tab === "reports" || S.tab === "console" || S.tab === "settings") && x[0] === "home") ? ' aria-current="true"' : "") + ">" + x[2] + x[1] + "</button>"; }).join("");
+    $("#nav").innerHTML = tabs.map(function (x) { return '<button data-a="tab" data-v="' + x[0] + '"' + (S.tab === x[0] || ((S.tab === "about" || S.tab === "diag" || S.tab === "reports" || S.tab === "calls" || S.tab === "console" || S.tab === "settings") && x[0] === "home") ? ' aria-current="true"' : "") + ">" + x[2] + x[1] + "</button>"; }).join("");
   }
   function render(keepScroll) {
     var v = $("#view"), top = v.scrollTop, h;
     $("#nav").style.display = S.ob ? "none" : "";
     if (S.ob) { v.innerHTML = vOnboard(); v.scrollTop = 0; var ab = $("#askbar"); if (ab) ab.remove(); return; }
     try {
-      h = S.tab === "home" ? vHome() : S.tab === "act" ? (S.det ? vDetail() : vAct()) : S.tab === "ask" ? vAsk() : S.tab === "settings" ? vSettings() : S.tab === "reports" ? vReports() : S.tab === "console" ? vConsole() : S.tab === "fam" ? vFam() : S.tab === "diag" ? vDiag() : vAbout();
+      h = S.tab === "home" ? vHome() : S.tab === "act" ? (S.det ? vDetail() : vAct()) : S.tab === "ask" ? vAsk() : S.tab === "settings" ? vSettings() : S.tab === "reports" ? vReports() : S.tab === "calls" ? vCalls() : S.tab === "console" ? vConsole() : S.tab === "fam" ? vFam() : S.tab === "diag" ? vDiag() : vAbout();
     } catch (e) {
       S.lastErr = "screen: " + ((e && e.message) || e);
       h = '<div class="card"><h3>Something went wrong</h3><p class="fine">' + esc(S.lastErr) + '</p><div class="btns"><button class="btn p w" data-a="tab" data-v="home">Home</button><button class="btn w" data-a="diag">' + t("diag") + "</button></div></div>";
@@ -2118,6 +2147,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (S.sheet === "menu") {
       h += '<div class="scrim" data-a="closesheet"></div><div class="sheet msheet"><h3>' + t("menuT") + "</h3>" +
         '<button class="row" data-a="tab" data-v="settings"><div class="av">' + I.gear + '</div><div class="tx"><b>' + t("setTitle") + "</b></div></button>" +
+        (SMS() ? '<button class="row" data-a="tab" data-v="calls"><div class="av">' + I.phone + '</div><div class="tx"><b>' + t("callsTitle") + "</b><p>" + t("callsSub") + "</p></div></button>" : "") +
         '<button class="row" data-a="tab" data-v="reports"><div class="av">' + I.msg + '</div><div class="tx"><b>' + t("sent").replace(/^./, function (c) { return c.toUpperCase(); }) + "</b><p>" + S.reports + "</p></div></button>" +
         '<button class="row" data-a="tab" data-v="console"><div class="av">' + I.shield + '</div><div class="tx"><b>' + t("cnRow") + "</b></div></button>" +
         '<button class="row" data-a="tab" data-v="about"><div class="av">' + I.spark + '</div><div class="tx"><b>' + t("how") + "</b></div></button></div>";
@@ -2263,11 +2293,14 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     else if (a === "goflag") { S.tab = "act"; S.det = null; S.actTab = "alerts"; render(); }
     else if (a === "cnon") { var cc = ($("#cnCode") || {}).value || ""; if (!Relay.valid(cc)) { toast(t("cnBadCode")); return; } Relay.setRoom(cc); startRelay(); render(); }
     else if (a === "callrole") { var sc = SMS(); if (sc && sc.requestCallScreening) sc.requestCallScreening().then(function (r) { S.callRole = { supported: true, held: !!r.held }; syncNative(); render(true); toast(r.held ? t("setCallsOn") : t("setCallsOff")); }).catch(function () { toast(t("setCallsOff")); }); }
+    else if (a === "notifallow") { var sn = SMS(); if (sn && sn.requestNotif) sn.requestNotif().then(function (r) { S.cnotif = !!r.granted; render(true); }).catch(function () {}); }
+    else if (a === "calltest") { var st = SMS(); if (st && st.callLabelTest) st.callLabelTest().then(function () { toast(t("setCallTestSent")); }).catch(function () {}); }
+    else if (a === "callsallow") { loadCalls(true); }
     else if (a === "silence") { S.silence = !S.silence; try { localStorage.setItem("linda_silence", S.silence ? "1" : "0"); } catch (e) {} syncNative(); render(true); }
     else if (a === "cloudsync") { S.cstat = "connecting"; render(true); cloudSync(); toast(t("setSrvWait")); }
     else if (a === "cnoff") { Relay.close(); Relay.setRoom(""); S.rstat = "off"; render(); }
     else if (a === "cntest") { Relay.send("app", { k: "hello" }).then(function (ok) { toast(ok ? t("cnTested") : t("cnBad")); }); }
-    else if (a === "tab") { S.tab = v; S.det = null; S.sheet = null; render(); renderOv(); }
+    else if (a === "tab") { S.tab = v; S.det = null; S.sheet = null; if (v === "calls") loadCalls(false); render(); renderOv(); }
     else if (a === "menu") { S.sheet = "menu"; renderOv(); }
     else if (a === "theme" || a === "themetoggle") { S.theme = a === "themetoggle" ? (isDark() ? "light" : "dark") : v; try { localStorage.setItem("linda_theme", S.theme); } catch (e) {} applyTheme(); render(true); renderOv(); }
     else if (a === "logo") { var nw = Date.now(); taps = nw - tapT < 1200 ? taps + 1 : 1; tapT = nw; if (taps >= 2) { taps = 0; S.sheet = "demo"; renderOv(); } }

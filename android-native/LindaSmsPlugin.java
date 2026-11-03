@@ -26,6 +26,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 
 import org.json.JSONObject;
+import android.provider.CallLog;
 
 /**
  * Lets the Linda web app read the SMS inbox and the contacts on this phone, and hears about new SMS.
@@ -36,7 +37,9 @@ import org.json.JSONObject;
     permissions = {
         @Permission(strings = { Manifest.permission.READ_SMS }, alias = "readSms"),
         @Permission(strings = { Manifest.permission.RECEIVE_SMS }, alias = "receiveSms"),
-        @Permission(strings = { Manifest.permission.READ_CONTACTS }, alias = "contacts")
+        @Permission(strings = { Manifest.permission.READ_CONTACTS }, alias = "contacts"),
+        @Permission(strings = { Manifest.permission.READ_CALL_LOG }, alias = "callLog"),
+        @Permission(strings = { "android.permission.POST_NOTIFICATIONS" }, alias = "notifications")
     }
 )
 public class LindaSmsPlugin extends Plugin {
@@ -45,9 +48,14 @@ public class LindaSmsPlugin extends Plugin {
     static volatile boolean foreground = false;
     static volatile String launchAddr = null;
     static volatile long launchDate = 0;
+    static volatile String launchCall = null;
 
     /** Remember which Linda notification the person tapped, so the app can open that message. */
     static void setLaunch(Intent i) {
+        if (i != null && i.hasExtra("linda_call")) {
+            launchCall = i.getStringExtra("linda_call");
+            i.removeExtra("linda_call");
+        }
         if (i != null && i.hasExtra("linda_addr")) {
             launchAddr = i.getStringExtra("linda_addr");
             launchDate = i.getLongExtra("linda_date", 0);
@@ -59,6 +67,7 @@ public class LindaSmsPlugin extends Plugin {
     @PluginMethod
     public void takeLaunch(PluginCall call) {
         JSObject ret = new JSObject();
+        if (launchCall != null) { ret.put("call", launchCall); launchCall = null; }
         if (launchAddr != null) {
             ret.put("address", launchAddr);
             ret.put("date", launchDate);
@@ -98,6 +107,70 @@ public class LindaSmsPlugin extends Plugin {
         JSObject r = new JSObject();
         r.put("held", callRoleHeld());
         call.resolve(r);
+    }
+
+    /** Can Linda show notifications? (Android 13 and newer must ask first.) */
+    @PluginMethod
+    public void notifStatus(PluginCall call) {
+        JSObject ret = new JSObject();
+        boolean ok = Build.VERSION.SDK_INT < 33 || getPermissionState("notifications") == PermissionState.GRANTED;
+        if (ok) { NotificationManager nm = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE); ok = nm == null || nm.areNotificationsEnabled(); }
+        ret.put("granted", ok);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void requestNotif(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= 33 && getPermissionState("notifications") != PermissionState.GRANTED) {
+            requestPermissionForAlias("notifications", call, "notifDone");
+        } else notifStatus(call);
+    }
+
+    @com.getcapacitor.annotation.PermissionCallback
+    private void notifDone(PluginCall call) { notifStatus(call); }
+
+    /** Shows a sample "scam caller" label so the person can check notifications work, without needing a real call. */
+    @PluginMethod
+    public void callLabelTest(PluginCall call) {
+        try {
+            JSONObject hit = new JSONObject();
+            hit.put("status", "confirmed"); hit.put("count", 5);
+            boolean sw = "sw".equals(getContext().getSharedPreferences(LindaScanner.PREFS, Context.MODE_PRIVATE).getString("lang", "en"));
+            LindaCallScreen.notifyCall(getContext(), "0712 345 678", "scam", hit, sw);
+        } catch (Exception e) { /* ignore */ }
+        call.resolve();
+    }
+
+    /** Recent incoming, missed and rejected calls, so the person can report a scam caller after the call. */
+    @PluginMethod
+    public void getCalls(PluginCall call) {
+        if (getPermissionState("callLog") != PermissionState.GRANTED) {
+            if (call.getBoolean("ask", false)) requestPermissionForAlias("callLog", call, "callsDone");
+            else { JSObject r = new JSObject(); r.put("denied", true); call.resolve(r); }
+            return;
+        }
+        callsDone(call);
+    }
+
+    @com.getcapacitor.annotation.PermissionCallback
+    private void callsDone(PluginCall call) {
+        JSObject ret = new JSObject();
+        if (getPermissionState("callLog") != PermissionState.GRANTED) { ret.put("denied", true); call.resolve(ret); return; }
+        JSArray out = new JSArray();
+        try (Cursor c = getContext().getContentResolver().query(CallLog.Calls.CONTENT_URI,
+                new String[] { CallLog.Calls.NUMBER, CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.CACHED_NAME },
+                CallLog.Calls.TYPE + " IN (1,3,5)", null, CallLog.Calls.DATE + " DESC")) {
+            int n = 0;
+            while (c != null && n < 60 && c.moveToNext()) {
+                String num = c.getString(0);
+                if (num == null || num.isEmpty()) continue;
+                JSObject o = new JSObject();
+                o.put("number", num); o.put("type", c.getInt(1)); o.put("date", c.getLong(2)); o.put("name", c.getString(3) == null ? "" : c.getString(3));
+                out.put(o); n++;
+            }
+        } catch (Exception e) { /* empty */ }
+        ret.put("calls", out);
+        call.resolve(ret);
     }
 
     @PluginMethod
