@@ -103,13 +103,15 @@ h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance}
       <p>What the Safaricom fraud team sees. Confirming a number sends it to every Linda phone.</p>
     </div>
     <div class="tools">
-      <button class="btn" id="sim">Simulate customer report</button>
-      <button class="btn" id="reset">Reset demo data</button>
+      <button class="btn" id="sim" data-demo>Simulate customer report</button>
+      <button class="btn" id="reset" data-demo>Reset demo data</button>
+      <button class="btn" id="lout" style="display:none">Sign out</button>
       <a class="btn" href="index.html">Open Linda app</a>
     </div>
   </div>
 
-  <section class="panel conn">
+  <section class="panel" id="login" style="display:none;max-width:420px;margin:0 auto 16px"><h2 style="font-size:18px">Fraud team sign-in</h2><p class="sub">Use the email and password your administrator created for you.</p><form id="lform" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"><input id="lemail" type="email" autocomplete="username" placeholder="Email" required style="padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit"><input id="lpass" type="password" autocomplete="current-password" placeholder="Password" required style="padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit"><button class="btn" type="submit">Sign in</button><p class="note" id="lmsg" style="margin:0"></p></form></section>
+  <section class="panel conn" data-demo>
     <div style="min-width:0;flex:1 1 280px">
       <h2 style="font-size:18px">Connect a Linda phone</h2>
       <p class="sub" style="margin:4px 0 0">On the phone, open Linda, then About, then Fraud console, and type this code. Reports sent from the phone then appear on this page, and numbers you confirm go back to the phone.</p>
@@ -122,7 +124,7 @@ h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance}
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-demo>
     <h2 style="font-size:18px">Call the phone</h2>
     <p class="sub">Pretend a caller is ringing the connected phone. It rings, vibrates and shows Linda's call screen, so you can show what a customer sees.</p>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
@@ -176,9 +178,10 @@ h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance}
       </section>
     </div>
   </div>
-  <p class="note">Demo data. Numbers are made up. In production this console reads Safaricom's real report stream and the 333 inbox.</p>
+  <p class="note" data-demo>Demo data. Numbers are made up. In production this console reads Safaricom's real report stream and the 333 inbox.</p>
 </div>
 
+<script src="linda-config.js"></script>
 <script>
 /* Shared demo state. The Linda app and the fraud-team console read and write the same record,
    so a report sent in the app shows up in the console, and a confirmation in the console
@@ -289,12 +292,31 @@ var Shared = (function () {
   }
   /* The fraud team pushes a warning to every Linda phone */
   function setBroadcast(text) { var s = load(); s.broadcast = text ? { t: Date.now(), x: text } : null; if (text) s.feed.unshift({ t: Date.now(), x: "Warning sent to every Linda phone." }); return save(s); }
+  /* Real backend: replace or merge the fraud list from the server and set the active warning */
+  function applyRemote(rows, bc, replace) {
+    var s = load(), k;
+    if (replace) s.db = {};
+    rows.forEach(function (r) {
+      k = null;
+      if (/^[0-9]+$/.test(r.number_norm)) for (var x in s.db) if (norm(x) === r.number_norm) { k = x; break; }
+      if (!k) k = r.display || r.number_norm;
+      s.db[k] = { status: r.status, type: r.status === "verified" ? "verified" : (r.type === "unknown" ? "other" : (r.type || "other")), count: r.reporters || 0, name: r.name || "", sample: r.sample || "", lastAt: r.last_report_at ? Date.parse(r.last_report_at) : 0, fresh: false };
+    });
+    s.broadcast = bc ? { t: Date.parse(bc.created_at), x: bc.text } : null;
+    s.syncedAt = Date.now();
+    return save(s);
+  }
+  function advice(type) {
+    var all = radarSeed().trends.concat(extraTrends()), i;
+    for (i = 0; i < all.length; i++) if (all[i].type === type) return all[i].w;
+    return "Customers are reporting this kind of message. Do not click links or send money. Forward the message to 333.";
+  }
   function reset() { mem = null; try { localStorage.removeItem(KEY); } catch (e) {} var s = seed(); return save(s); }
   function fmtTime(ts) {
     var d = new Date(ts), h = d.getHours(), m = d.getMinutes(), ap = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12; return h + ":" + (m < 10 ? "0" + m : m) + " " + ap;
   }
-  return { load: load, save: save, onChange: onChange, report: report, confirm: confirm, addCase: addCase, setGuardian: setGuardian, addAlert: addAlert, addStopped: addStopped, setBroadcast: setBroadcast, reset: reset, fmtTime: fmtTime, findKey: findKey };
+  return { load: load, save: save, onChange: onChange, report: report, confirm: confirm, addCase: addCase, setGuardian: setGuardian, addAlert: addAlert, addStopped: addStopped, setBroadcast: setBroadcast, applyRemote: applyRemote, advice: advice, reset: reset, fmtTime: fmtTime, findKey: findKey };
 })();
 
 /* Relay: lets the Linda app on one phone and the fraud console on another device talk to each other.
@@ -368,6 +390,195 @@ var Relay = (function () {
   return { room: room, setRoom: setRoom, newRoom: function () { return setRoom(rid(6)); }, valid: valid, clean: clean, send: send, connect: connect, close: close, base: base };
 })();
 
+/* Cloud: the real Linda backend (Supabase). Plain fetch, no SDK, so it works the same in the app and the console.
+   Phones sign in anonymously (no phone number, no email). The fraud team signs in with email and password.
+   Row-level security on the server decides what each person can see, so only the public "anon" key is used here. */
+var Cloud = (function () {
+  function cfg() {
+    var c = (typeof window !== "undefined" && window.LINDA_CONFIG) || {};
+    return { url: String(c.url || "").replace(/\/+$/, ""), key: String(c.anonKey || "") };
+  }
+  function on() { var c = cfg(); return /^https?:\/\//.test(c.url) && c.key.length > 20; }
+  function ls(k, v) {
+    try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {}
+    return null;
+  }
+  function net(path, opt) {
+    var c = cfg(), ctl = typeof AbortController !== "undefined" ? new AbortController() : null, to;
+    opt = opt || {}; opt.headers = opt.headers || {};
+    opt.headers.apikey = c.key; opt.cache = "no-store";
+    if (ctl) { opt.signal = ctl.signal; to = setTimeout(function () { ctl.abort(); }, 15000); }
+    return fetch(c.url + path, opt).then(function (r) {
+      clearTimeout(to);
+      return r.text().then(function (txt) { var j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {} return { ok: r.ok, status: r.status, json: j }; });
+    }, function (e) { clearTimeout(to); var er = new Error("offline"); er.offline = true; throw er; });
+  }
+  function pack(j) {
+    if (!j || !j.access_token) return null;
+    return { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at ? j.expires_at * 1000 : Date.now() + (j.expires_in || 3600) * 1000, user_id: j.user && j.user.id, email: j.user && j.user.email };
+  }
+
+  /* One client per sign-in slot: the phone uses an anonymous one, the console a staff one. */
+  function client(slot, anon) {
+    var sess = null, pending = null;
+    function load() { try { sess = JSON.parse(ls(slot)); } catch (e) { sess = null; } }
+    function save(s) { sess = s; ls(slot, s ? JSON.stringify(s) : null); }
+    function post(path, body) { return net(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+    function ensure() {
+      if (pending) return pending;
+      load();
+      if (sess && sess.expires_at - Date.now() > 60000) return Promise.resolve(sess);
+      var p = Promise.resolve();
+      if (sess && sess.refresh_token) {
+        p = post("/auth/v1/token?grant_type=refresh_token", { refresh_token: sess.refresh_token }).then(function (r) {
+          if (r.ok && pack(r.json)) { save(pack(r.json)); return sess; }
+          if (r.status >= 400 && r.status < 500) save(null);
+          else { var e = new Error("server"); e.offline = true; throw e; }
+        });
+      }
+      pending = p.then(function (got) {
+        if (got) return got;
+        if (!anon) throw new Error("signin");
+        return post("/auth/v1/signup", {}).then(function (r) {
+          if (r.ok && pack(r.json)) { save(pack(r.json)); return sess; }
+          var e = new Error("signup"); e.offline = r.status >= 500; throw e;
+        });
+      }).then(function (s) { pending = null; return s; }, function (e) { pending = null; throw e; });
+      return pending;
+    }
+    function call(method, path, body, extra, retry) {
+      return ensure().then(function (s) {
+        var h = { Authorization: "Bearer " + s.access_token };
+        if (body !== undefined) h["Content-Type"] = "application/json";
+        for (var k in extra) h[k] = extra[k];
+        return net(path, { method: method, headers: h, body: body === undefined ? undefined : JSON.stringify(body) });
+      }).then(function (r) {
+        if (r.status === 401 && !retry) { if (sess) sess.expires_at = 0; return call(method, path, body, extra, true); }
+        return r;
+      });
+    }
+    return {
+      signedIn: function () { load(); return !!sess; },
+      user: function () { load(); return sess ? { id: sess.user_id, email: sess.email } : null; },
+      login: function (email, pw) {
+        return post("/auth/v1/token?grant_type=password", { email: email, password: pw }).then(function (r) {
+          if (r.ok && pack(r.json)) { save(pack(r.json)); return { ok: true }; }
+          return { ok: false, error: (r.json && (r.json.error_description || r.json.msg)) || "Sign-in failed" };
+        });
+      },
+      logout: function () { save(null); },
+      get: function (path) { return call("GET", "/rest/v1/" + path, undefined, {}); },
+      insert: function (table, row) { return call("POST", "/rest/v1/" + table, row, { Prefer: "return=minimal" }); },
+      rpc: function (name, args) { return call("POST", "/rest/v1/rpc/" + name, args || {}, {}); }
+    };
+  }
+
+  /* ---------- phone side ---------- */
+  var dev = client("linda_cloud_dev", true), Q = "linda_cloud_q", SINCE = "linda_cloud_since";
+  function queue() { try { return JSON.parse(ls(Q)) || []; } catch (e) { return []; } }
+  function setQueue(q) { ls(Q, q.length ? JSON.stringify(q.slice(-50)) : null); }
+  /* Returns true when the server has it. Network trouble keeps it in a small queue and retries on the next sync. */
+  function send(row, noQueue) {
+    if (!on()) return Promise.resolve(false);
+    return dev.insert("reports", row).then(function (r) {
+      if (r.ok) return true;
+      if (r.status >= 500 && !noQueue) { var q = queue(); q.push(row); setQueue(q); }
+      return false;
+    }, function () { if (!noQueue) { var q = queue(); q.push(row); setQueue(q); } return false; });
+  }
+  function flush() {
+    var q = queue(); if (!q.length) return Promise.resolve();
+    setQueue([]);
+    return q.reduce(function (p, row) { return p.then(function () { return send(row); }); }, Promise.resolve());
+  }
+  function report(n, type, region, sample) { return send({ kind: "report", number: String(n || ""), type: type || "other", region: region || "", sample: String(sample || "").slice(0, 300) }); }
+  function sendCase(c) { return send({ kind: "case", number: String((c && c.who) || ""), type: "case", payload: c || {} }); }
+  function stopped(amount) { return send({ kind: "stopped", payload: { amount: amount || 0 } }); }
+  /* Pull what changed since last time: numbers (fraud list) and the active warning. */
+  function sync() {
+    if (!on()) return Promise.resolve(null);
+    return flush().then(function () {
+      var since = ls(SINCE), rows = [], full = !since, loops = 0;
+      function page() {
+        var p = "numbers?select=*&order=updated_at.asc&limit=1000" + (since ? "&updated_at=gt." + encodeURIComponent(since) : "");
+        return dev.get(p).then(function (r) {
+          if (!r.ok || !Array.isArray(r.json)) throw new Error("numbers " + r.status);
+          rows = rows.concat(r.json);
+          if (r.json.length === 1000 && ++loops < 10) { since = r.json[r.json.length - 1].updated_at; return page(); }
+        });
+      }
+      return page().then(function () {
+        return dev.get("broadcasts?select=id,text,created_at&active=eq.true&order=created_at.desc&limit=1");
+      }).then(function (b) {
+        if (!b.ok || !Array.isArray(b.json)) throw new Error("broadcasts " + b.status);
+        if (rows.length) ls(SINCE, rows[rows.length - 1].updated_at);
+        else if (full) ls(SINCE, new Date(0).toISOString());
+        return { rows: rows, full: full, broadcast: b.json[0] || null };
+      });
+    });
+  }
+
+  /* ---------- fraud console side ---------- */
+  var staff = client("linda_cloud_staff", false);
+  function isStaff() { return staff.get("staff?select=user_id").then(function (r) { return r.ok && Array.isArray(r.json) && r.json.length > 0; }); }
+  var DAY = 86400000;
+  /* Turn server rows into the same shape the console already draws. */
+  function buildState(nums, reps, bc, advice) {
+    var now = Date.now(), s = { rev: 1, syncedAt: now, db: {}, cases: [], stopped: { n: 0, amount: 0 }, feed: [], alerts: [], guardian: null, broadcast: null, radar: { regions: {}, hours: [], trends: [] } };
+    var i, r, ts;
+    (nums || []).forEach(function (n) {
+      var last = n.last_report_at ? Date.parse(n.last_report_at) : 0;
+      s.db[n.display || n.number_norm] = { status: n.status, type: n.status === "verified" ? "verified" : (n.type === "unknown" ? "other" : n.type), count: n.reporters || 0, name: n.name || "", sample: n.sample || "", lastAt: last, fresh: n.status === "pending" && now - last < 600000 };
+    });
+    for (i = 0; i < 12; i++) s.radar.hours.push(0);
+    var cur = {}, prev = {};
+    (reps || []).forEach(function (x) {
+      ts = Date.parse(x.created_at);
+      if (x.kind === "case") { var c = x.payload || {}; s.cases.push({ ref: c.ref || "Case", type: c.type || "Scam case", amount: c.amount, code: c.code, when: c.when, who: c.who, t: ts }); }
+      else if (x.kind === "stopped") { s.stopped.n++; s.stopped.amount += (x.payload && x.payload.amount) || 0; }
+      else if (x.kind === "report") {
+        var age = now - ts, t = x.type || "other";
+        if (age < 7 * DAY) {
+          if (x.region) s.radar.regions[x.region] = (s.radar.regions[x.region] || 0) + 1;
+          var b = cur[t] || (cur[t] = { n: 0, x: "", ts: 0 }); b.n++;
+          if (x.sample && ts > b.ts) { b.x = x.sample; b.ts = ts; }
+          if (age < 12 * 3600000) s.radar.hours[11 - Math.floor(age / 3600000)]++;
+        } else if (age < 14 * DAY) prev[t] = (prev[t] || 0) + 1;
+      }
+    });
+    Object.keys(cur).forEach(function (t) {
+      var x = cur[t].x; x = x ? (x.length > 60 ? x.slice(0, 57) + "..." : x) : "";
+      s.radar.trends.push({ type: t, x: x || t, n: cur[t].n, prev: prev[t] || 0, w: advice ? advice(t) : "" });
+    });
+    (reps || []).slice(0, 8).forEach(function (x) {
+      var w = x.kind === "case" ? "New scam case reported." : x.kind === "stopped" ? "A customer cancelled a payment after a Linda warning." : "Customer report for " + (x.number || "a number") + (x.region ? " (" + x.region + ")." : ".");
+      s.feed.push({ t: Date.parse(x.created_at), x: w });
+    });
+    s.cases.sort(function (a, b) { return b.t - a.t; });
+    if (bc) s.broadcast = { t: Date.parse(bc.created_at), x: bc.text };
+    return s;
+  }
+  function fetchState(advice) {
+    var since = new Date(Date.now() - 14 * DAY).toISOString();
+    return Promise.all([
+      staff.get("numbers?select=*&order=updated_at.desc&limit=2000"),
+      staff.get("reports?select=kind,number,type,region,sample,payload,created_at&order=created_at.desc&limit=5000&created_at=gte." + encodeURIComponent(since)),
+      staff.get("broadcasts?select=text,created_at&active=eq.true&order=created_at.desc&limit=1")
+    ]).then(function (a) {
+      for (var i = 0; i < 3; i++) if (!a[i].ok || !Array.isArray(a[i].json)) { var e = new Error("read " + a[i].status); e.status = a[i].status; throw e; }
+      return buildState(a[0].json, a[1].json, a[2].json[0] || null, advice);
+    });
+  }
+  function act(name, args) { return staff.rpc(name, args).then(function (r) { if (!r.ok) throw new Error((r.json && r.json.message) || ("rpc " + r.status)); return true; }); }
+
+  return { on: on, report: report, sendCase: sendCase, stopped: stopped, sync: sync, flush: flush,
+    staff: staff, isStaff: isStaff, fetchState: fetchState, buildState: buildState,
+    confirm: function (n, type) { return act("confirm_number", { p_number: n, p_type: type || null }); },
+    verify: function (n, name) { return act("verify_number", { p_number: n, p_name: name }); },
+    dismiss: function (n) { return act("dismiss_number", { p_number: n }); },
+    broadcast: function (text) { return act("set_broadcast", { p_text: text || null }); } };
+})();
+
 </script>
 <script>
 (function () {
@@ -435,6 +646,15 @@ var Relay = (function () {
   }
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
+    if (LIVE) {
+      if (b.id === "lout") { Cloud.staff.logout(); location.reload(); return; }
+      var job = null, msg = "Something went wrong. Try again.";
+      if (b.id === "bcast") { var t1 = (lastState.radar.trends.filter(function (t) { return t.type === b.dataset.i; })[0] || {}); job = Cloud.broadcast("Safaricom alert: " + (t1.w || "")); }
+      else if (b.id === "unwarn") job = Cloud.broadcast(null);
+      else if (b.dataset.n) job = Cloud.confirm(b.dataset.n, (lastState.db[b.dataset.n] || {}).type);
+      if (job) { b.disabled = true; job.then(refresh, function (er) { b.disabled = false; alert(msg + " (" + er.message + ")"); }); }
+      return;
+    }
     if (b.id === "bcast") { var s0 = Shared.load(), t0 = s0.radar.trends.filter(function (t) { return t.type === b.dataset.i; })[0]; render(Shared.setBroadcast("Safaricom alert: " + t0.w)); Relay.send("console", { k: "broadcast", text: "Safaricom alert: " + t0.w }); return; }
     if (b.id === "unwarn") { render(Shared.setBroadcast(null)); Relay.send("console", { k: "broadcast", text: null }); return; }
     if (b.dataset.call || b.id === "callgo") {
@@ -451,8 +671,26 @@ var Relay = (function () {
     else if (b.id === "sim") { var x = SIM[simI++ % SIM.length]; render(Shared.report(x[0], x[1], x[2])); }
     else if (b.id === "reset") render(Shared.reset());
   });
-  Shared.onChange(render);
-  render(Shared.load());
+  var LIVE = Cloud.on() && !/[?&]demo=1/.test(location.search), lastState = null;
+  function showLive(on) { Array.prototype.forEach.call(document.querySelectorAll("[data-demo]"), function (el) { el.style.display = on ? "none" : ""; }); $("#lout").style.display = on ? "" : "none"; }
+  function refresh() {
+    return Cloud.fetchState(Shared.advice).then(function (st) { lastState = st; $("#login").style.display = "none"; render(st); }, function (er) {
+      if (er.status === 401 || er.status === 403) { Cloud.staff.logout(); showLogin(""); } else if (!lastState) { showLogin("Could not reach the server. Check your internet and try again."); }
+    });
+  }
+  function showLogin(msg) { $("#login").style.display = ""; $("#lmsg").textContent = msg || ""; $("#kpis").innerHTML = ""; }
+  function startLive() {
+    showLive(true); $("#lform").addEventListener("submit", function (e) {
+      e.preventDefault(); $("#lmsg").textContent = "Signing in...";
+      Cloud.staff.login($("#lemail").value.trim(), $("#lpass").value).then(function (r) {
+        if (!r.ok) { $("#lmsg").textContent = r.error; return; }
+        Cloud.isStaff().then(function (ok) { if (!ok) { Cloud.staff.logout(); $("#lmsg").textContent = "This account is not on the fraud team list."; } else { $("#lpass").value = ""; $("#lmsg").textContent = "Loading..."; refresh(); } });
+      }, function () { $("#lmsg").textContent = "Could not reach the server."; });
+    });
+    if (Cloud.staff.signedIn()) refresh(); else showLogin("");
+    setInterval(function () { if (!document.hidden && Cloud.staff.signedIn()) refresh(); }, 20000);
+  }
+  if (LIVE) startLive(); else { Shared.onChange(render); render(Shared.load()); }
   /* ---- cross-device link ---- */
   var lastSeen = 0;
   function showStat(kind, text) { var el = $("#rstat"); el.className = "st " + kind; el.lastChild.textContent = text; }
@@ -473,7 +711,7 @@ var Relay = (function () {
       else if (st === "online" && !lastSeen) showStat("", "Ready. Waiting for a phone");
     });
   }
-  (function () {
+  if (!LIVE) (function () {
     var m = /[?&]room=([A-Za-z0-9]+)/.exec(location.search); if (m && Relay.valid(m[1])) Relay.setRoom(m[1]);
     startRelay();
   })();
