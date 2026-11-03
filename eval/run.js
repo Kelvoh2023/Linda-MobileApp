@@ -10,3 +10,8 @@ console.log("scams caught: " + tp + "/" + nS + "  (" + Math.round(100 * tp / nS)
 console.log("genuine flagged as scam: " + hardFP + "/" + nL + "   genuine flagged as caution: " + softFP + "/" + nL);
 if (miss.length) console.log("MISSED:\n  " + miss.join("\n  "));
 if (fps.length) console.log("FALSE ALARMS:\n  " + fps.join("\n  "));
+/* Regression: a sender NAME must never match a different name in the fraud list (KCBINFO vs KilimallMKT). */
+var db = { "KilimallMKT": { status: "pending", type: "other", count: 1, name: "" }, "0711 000 412": { status: "confirmed", type: "reversal", count: 9, name: "" } };
+var a = M.scan("Pay Lipa Stima direct using the New KCB App or dial *522#.", { sender: "KCBINFO", db: db, contacts: [] });
+var b = M.scan("hello", { sender: "+254711000412", db: db, contacts: [] });
+console.log("name collision: " + (a.level === "ok" ? "PASS" : "FAIL") + "   number match: " + (b.level === "scam" ? "PASS" : "FAIL"));

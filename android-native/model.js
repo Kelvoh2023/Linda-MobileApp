@@ -315,7 +315,7 @@ var LindaModel = (function () {
       reversal:  { en: "It asks you to send money back. This is the reversal scam.", sw: "Inakuomba urudishe pesa. Huu ni ulaghai wa kurudisha pesa." },
       fee:       { en: "It asks for a fee before you get a loan, job or prize.", sw: "Inaomba ada kabla ya kupata mkopo, kazi au zawadi." },
       prize:     { en: "It says you won something you never entered.", sw: "Inasema umeshinda kitu ambacho hukushiriki." },
-      link:      { en: "It has a link that is not an official Safaricom or KRA address.", sw: "Ina kiungo ambacho si anwani rasmi ya Safaricom au KRA." },
+      link:      { en: "It has a link to a website Linda does not recognise. Real companies use their own address, so check it carefully before you open it.", sw: "Ina kiungo cha tovuti ambayo Linda haitambui. Kampuni halisi hutumia anwani yao wenyewe, kwa hivyo ikague kwa makini kabla ya kuifungua." },
       urgent:    { en: "It pushes you to act fast so you do not check.", sw: "Inakusukuma kuchukua hatua haraka bila kuthibitisha." },
       newnumber: { en: "It asks you to pay a new number, not the one you know.", sw: "Inakuambia ulipe namba mpya, si ile unayoijua." },
       sender:    { en: "The sender is not a verified Safaricom sender ID.", sw: "Mtumaji si kitambulisho rasmi cha Safaricom." },
@@ -350,9 +350,17 @@ var LindaModel = (function () {
 
   /* ---------- scan: combine Safaricom list + rules + model ---------- */
   function normNum(n) { return String(n).replace(/[^0-9]/g, "").replace(/^254/, "0"); }
+  /* Phone numbers match on their digits. Sender names (KCBINFO, MPESA) match on their letters.
+     A name must never match a different name, and an empty key must never match anything. */
+  function idKey(n) {
+    n = String(n);
+    if (/[a-z]/i.test(n)) { var a = n.toUpperCase().replace(/[^A-Z0-9]/g, ""); return a ? "A:" + a : ""; }
+    return normNum(n);
+  }
   function lookupNumber(db, num) {
-    var want = normNum(num), k;
-    for (k in db) if (normNum(k) === want) return { key: k, rec: db[k] };
+    var want = idKey(num), k;
+    if (!want) return null;
+    for (k in db) if (idKey(k) === want) return { key: k, rec: db[k] };
     return null;
   }
   /* Contacts are indexed once (number -> contact, first name -> contact) so a scan stays fast even with thousands of contacts. */
