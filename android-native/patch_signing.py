@@ -34,4 +34,7 @@ if "quickjs-android" not in s:
     assert n == 1, "capacitor-android dependency line not found"
 
 open(path, "w", encoding="utf-8").write(s)
+if "androidx.work:work-runtime" not in s:
+    s, n2 = re.subn(r"(\n    implementation project\(':capacitor-android'\))", r"\1\n    implementation 'androidx.work:work-runtime:2.10.0'", s, count=1)
+    open(path, "w").write(s)
 print("gradle patched: signing, version, quickjs")

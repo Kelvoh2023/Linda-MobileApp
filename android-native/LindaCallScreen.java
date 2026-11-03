@@ -126,6 +126,7 @@ public class LindaCallScreen extends CallScreeningService {
                 ? " imeripotiwa na wateja " + count + ". Usitoe PIN wala kutuma pesa."
                 : " was reported by " + count + " customers. Do not share your PIN or send money.");
         }
+        if (!"unknown".equals(level) && LindaOverlay.allowed(ctx)) LindaOverlay.show(ctx, level, title, text, number, sw);
         boolean quiet = "unknown".equals(level) || "verified".equals(level);
         String ch = quiet ? CHANNEL + "-quiet" : CHANNEL;
         if (Build.VERSION.SDK_INT >= 26) {

@@ -26,6 +26,13 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 
 import org.json.JSONObject;
+import android.provider.Settings;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import java.util.concurrent.TimeUnit;
 import android.provider.CallLog;
 
 /**
@@ -130,6 +137,38 @@ public class LindaSmsPlugin extends Plugin {
     private void notifDone(PluginCall call) { notifStatus(call); }
 
     /** Shows a sample "scam caller" label so the person can check notifications work, without needing a real call. */
+    @PluginMethod
+    public void overlayStatus(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("granted", LindaOverlay.allowed(getContext()));
+        call.resolve(ret);
+    }
+
+    /** Opens Android's "Display over other apps" page for Linda. */
+    @PluginMethod
+    public void requestOverlay(PluginCall call) {
+        try {
+            Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getContext().getPackageName()));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(i);
+        } catch (Exception e) { /* ignore */ }
+        call.resolve();
+    }
+
+    /** Starts the ~15 minute background update of the fraud list (works with Linda closed). */
+    @PluginMethod
+    public void scheduleSync(PluginCall call) {
+        String url = call.getString("url", ""), key = call.getString("key", "");
+        if (url.isEmpty() || key.isEmpty()) { call.resolve(); return; }
+        getContext().getSharedPreferences(LindaScanner.PREFS, Context.MODE_PRIVATE).edit().putString("cfg_url", url.replaceAll("/+$", "")).putString("cfg_key", key).apply();
+        try {
+            PeriodicWorkRequest w = new PeriodicWorkRequest.Builder(LindaSyncWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build();
+            WorkManager.getInstance(getContext()).enqueueUniquePeriodicWork("linda-sync", ExistingPeriodicWorkPolicy.KEEP, w);
+        } catch (Exception e) { /* ignore */ }
+        call.resolve();
+    }
+
     @PluginMethod
     public void callLabelTest(PluginCall call) {
         try {
@@ -281,6 +320,8 @@ public class LindaSmsPlugin extends Plugin {
         if (db != null) e.putString("db", db);
         String lang = call.getString("lang");
         if (lang != null) e.putString("lang", lang);
+        String rep = call.getString("reported");
+        if (rep != null) e.putString("reported", rep);
         if (call.hasOption("calls")) e.putBoolean("calls", Boolean.TRUE.equals(call.getBoolean("calls")));
         if (call.hasOption("silence")) e.putBoolean("silence", Boolean.TRUE.equals(call.getBoolean("silence")));
         String trusted = call.getString("trusted");

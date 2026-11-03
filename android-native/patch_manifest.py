@@ -2,7 +2,7 @@
 import sys
 path = sys.argv[1]
 s = open(path, encoding="utf-8").read()
-perms = ["android.permission.READ_SMS", "android.permission.RECEIVE_SMS", "android.permission.READ_CONTACTS", "android.permission.POST_NOTIFICATIONS", "android.permission.READ_CALL_LOG"]
+perms = ["android.permission.READ_SMS", "android.permission.RECEIVE_SMS", "android.permission.READ_CONTACTS", "android.permission.POST_NOTIFICATIONS", "android.permission.READ_CALL_LOG", "android.permission.SYSTEM_ALERT_WINDOW", "android.permission.INTERNET"]
 add = "".join('    <uses-permission android:name="%s" />\n' % p for p in perms if p not in s)
 if add:
     i = s.index("<application")

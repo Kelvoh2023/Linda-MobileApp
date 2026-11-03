@@ -81,8 +81,8 @@ begin
   end if;
   if new.kind = 'report' and new.number_norm <> '' and exists (
       select 1 from public.reports where device = new.device and kind = 'report'
-        and number_norm = new.number_norm and created_at > now() - interval '1 day') then
-    return null; -- silently ignore duplicate report from the same phone for the same number today
+        and number_norm = new.number_norm and created_at > now() - interval '30 days') then
+    return null; -- silently ignore a repeat report from the same phone for the same number within 30 days
   end if;
   return new;
 end $$;
