@@ -111,13 +111,51 @@ var LindaModel = (function () {
     [S, "Courier: delivery failed. Confirm your address and pay the redelivery fee to receive your package."],
     [S, "I am stranded in hospital after an accident, please send Ksh 4,000 urgently, I will explain later."],
     [S, "Dear customer, a refund of Ksh 8,200 is waiting. Call our agent on 0722 998 877 immediately to claim."],
+    [S, "Dear customer your Family Bank account will be closed today. Confirm your PIN and ID at familybank-verify.top to keep it active."],
+    [S, "Ujumbe kutoka Safaricom: umeshinda gari! Tuma Ksh 2,500 ada ya usajili kwa 0715 000 111 upate zawadi."],
+    [S, "Hi dear, my phone got stolen so I am using a friend's number. Please send Ksh 3,000 to this number, I will pay you back tonight."],
+    [S, "Sorry I deposited Ksh 6,000 into your M-PESA by mistake. Please send it back to 0722 000 333, I am begging you."],
+    [S, "Final warning: your tax account is flagged. Pay Ksh 9,500 to avoid legal action at kra-clear.click now."],
+    [S, "Get Ksh 20,000 loan instantly, no security. Pay Ksh 1,000 verification first to 0700 454 545."],
+    [S, "Your ATM card is blocked. Call 0733 800 800 now and give your PIN to unblock it."],
+    [S, "Work from home! Earn Ksh 5,000 per day. Pay Ksh 600 to join the WhatsApp group today. Limited slots."],
+    [S, "Hello, I am a lawyer. A relative of yours left you Ksh 12 million. Send Ksh 4,000 to start the paperwork."],
+    [S, "Safaricom promo: reply with your M-PESA PIN to receive your Ksh 15,000 Mwaka Mpya bonus."],
+    [S, "Parcel from Amazon is held. Pay Ksh 350 customs at amazon-ke-parcel.xyz to receive it."],
+    [S, "Umechaguliwa kupata mkopo wa Ksh 30,000. Tuma Ksh 800 bima kwanza kisha pesa zitaingia."],
+    [S, "Acct alert: Unusual activity detected. Verify at mpesa-safe-check.online or your line will be barred."],
+    [S, "Boss I am in hospital and need Ksh 8,000 urgently, my M-PESA is not working. Send to 0746 100 200 please."],
     /* ---- normal: look-alikes that are fine ---- */
     [L, "Your Jumia order 458221 has shipped and arrives Thursday. Track it at jumia.co.ke/track"],
     [L, "KCB: Your OTP is 482913. Do not share it with anyone. KCB will never ask for it."],
     [L, "Hi, I applied for the job at the bank. Interview is on Monday at 10am, wish me luck!"],
     [L, "Your package from Amazon was delivered to the front desk today at 2:15 PM."],
     [L, "Reminder: your account statement for October is ready. Log in to the official app to view it."],
-    [L, "Boss, the forex rates today are good, I will convert the dollars after lunch."]
+    [L, "Boss, the forex rates today are good, I will convert the dollars after lunch."],
+    [L, "Equity: Ksh 3,200.00 debited from your account ending 9087 on 01-Nov. Available balance Ksh 14,500.00. Call 0763 000 000 if this was not you."],
+    [L, "Co-op Bank: Ksh 8,000 credited to account 0112233445. Balance Ksh 21,300. For any query call 0711 049 000."],
+    [L, "Stanbic: your card ending 5521 was used for Ksh 2,400 at Quickmart. If you did not make this payment call 0711 068 000."],
+    [L, "DTB: Ksh 15,000 transferred to account ending 3340 successfully. Thank you for banking with us."],
+    [L, "Your DHL shipment 4412398 is out for delivery today. The rider will call you on arrival. Track at dhl.com/ke"],
+    [L, "Posta: your parcel has arrived at the Nairobi GPO. Collect it with your ID within 14 days."],
+    [L, "Glovo: your order is on the way. Rider Kevin will arrive in 12 minutes."],
+    [L, "M-PESA: You have paid Ksh 450.00 to KPLC PREPAID. Token 4411 8822 3344 5566. Units 18.3."],
+    [L, "Confirmed. Ksh 700.00 sent to Airtime on 2/11/26. M-PESA balance is Ksh 2,115.00. Transaction cost Ksh 0.00."],
+    [L, "Safaricom: Your Tunukiwa offer is ready. Buy 2GB for Ksh 50 by dialling *444#. Offer valid till midnight."],
+    [L, "Nimepokea pesa, asante sana. Nitakupigia kesho asubuhi tuongee kuhusu shamba."],
+    [L, "Mama anauliza kama utakuja Jumapili. Amepika chapati na nyama."],
+    [L, "Poa bro, tuma ile document kwa email nitaiona jioni. Asante."],
+    [L, "Reminder: school fees balance is Ksh 12,000 due 15 November. Pay via the school paybill 400200 and keep the receipt."],
+    [L, "Your clinic appointment is on Tuesday at 9am. Please arrive 15 minutes early and carry your insurance card."],
+    [L, "Hi team, standup is moved to 9:30 tomorrow. Please update your tickets before then."],
+    [L, "Your Netflix payment of Ksh 1,100 was successful. Enjoy watching! Manage your plan at netflix.com/account"],
+    [L, "Bolt: your trip receipt for Ksh 640 is ready. Thanks for riding with us."],
+    [L, "Happy new month! Wishing you a productive one. Let's catch up this weekend."],
+    [L, "KRA: Your PIN certificate has been generated. Download it from itax.kra.go.ke using your own login."],
+    [L, "Hi Mr Mwangi, your loan repayment of Ksh 4,500 is due on the 5th. Pay through the official paybill listed on your agreement."],
+    [L, "Imeandikwa: mkutano wa wazazi shuleni ni Ijumaa saa nane mchana. Tafadhali fika kwa wakati."],
+    [L, "Sorry for the late reply, I was in a meeting. I will send the report by 5pm."],
+    [L, "Absa: A transfer of Ksh 25,000 to your account was received. Reference SALARY NOV. Balance Ksh 31,420."]
   ];
 
   /* ---------- text to features ---------- */
@@ -191,7 +229,7 @@ var LindaModel = (function () {
   /* ---------- plain-language rules (explain the verdict) ---------- */
   /* Link check: where does a link really go? Official sites are fine. Short links, look-alikes of real brands,
      bare IP addresses and throw-away domain endings are flagged. */
-  var OFFICIAL = /(^|\.)(safaricom\.(co\.ke|com|net)|m-pesa\.com|mpesa\.(co\.ke|com)|[a-z0-9-]+\.go\.ke|equitybank\.co\.ke|equitygroupholdings\.com|kcbgroup\.com|co-opbank\.co\.ke|absa\.co\.ke|stanbicbank\.co\.ke|ncbagroup\.com|dtbafrica\.com|airtelkenya\.com|airtel\.co\.ke|telkom\.co\.ke|jumia\.co\.ke|kplc\.co\.ke|google\.com|youtube\.com|facebook\.com|whatsapp\.com|wa\.me|instagram\.com|twitter\.com|x\.com|linkedin\.com|apple\.com|microsoft\.com|amazon\.com|netflix\.com|uber\.com|bolt\.eu)$/;
+  var OFFICIAL = /(^|\.)(safaricom\.(co\.ke|com|net)|m-pesa\.com|mpesa\.(co\.ke|com)|[a-z0-9-]+\.go\.ke|equitybank\.co\.ke|equitygroupholdings\.com|kcbgroup\.com|co-opbank\.co\.ke|absa\.co\.ke|stanbicbank\.co\.ke|ncbagroup\.com|dtbafrica\.com|airtelkenya\.com|airtel\.co\.ke|telkom\.co\.ke|jumia\.co\.ke|kplc\.co\.ke|google\.com|dhl\.(com|co\.ke)|fedex\.com|ups\.com|posta\.co\.ke|sendyit\.com|youtube\.com|facebook\.com|whatsapp\.com|wa\.me|instagram\.com|twitter\.com|x\.com|linkedin\.com|apple\.com|microsoft\.com|amazon\.com|netflix\.com|uber\.com|bolt\.eu)$/;
   var SHORT = /^(bit\.ly|tinyurl\.com|cutt\.ly|t\.ly|rb\.gy|is\.gd|goo\.gl|ow\.ly|shorturl\.at|tiny\.cc|buff\.ly|lnkd\.in)$/;
   var BRAND = /(safaricom|mpesa|m-pesa|\bkra\b|ecitizen|equity|kcb|airtel|ntsa|nhif|\bsha\b|huduma|hustler|fuliza|okoa|bonga|co-?op|absa|stanbic|\bdtb\b|ncba|nssf|kplc|ardhi)/;
   var BADTLD = /\.(xyz|top|click|online|site|icu|cfd|shop|live|buzz|link|club|vip|work|cc|tk|ml|ga|cf|gq|info|support|help|cash|loans?|today|store|website|ws|page|monster|rest|fit)$/;
@@ -256,6 +294,7 @@ var LindaModel = (function () {
         /(send|tuma|pay|lipa).{0,40}(ksh|kes|\d{3,}|\d+k\b)/.test(t);
     }],
     ["callnow", function (t) {
+      if (/(if (this was |it was )?not you|if you did ?n[o']?t|for any (query|queries|enquir|question)|for (more )?(help|information)|to report)/.test(t) && !/(pin|password|otp|code)/.test(t)) return false; /* real bank alerts say "call us if this was not you" */
       return /(call|piga|whatsapp|wasiliana|contact)[^.]{0,30}(\+?254|\b0)[17]\d{2}[\s-]?\d{3}[\s-]?\d{3}/.test(t) &&
         /(urgent|immediately|haraka|account|refund|prize|blocked|suspend|customer care|agent|won|claim|loan|verify|deactivat)/.test(t);
     }],

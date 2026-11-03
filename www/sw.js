@@ -1,5 +1,5 @@
 /* Linda service worker: keeps the app working with no internet (cache first, fall back to network). */
-var CACHE = "linda-v9";
+var CACHE = "linda-v10";
 var SHELL = ["./", "./index.html", "./dashboard.html", "./manifest.json", "./capacitor.js", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png"];
 self.addEventListener("install", function (e) { e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); })); });
 self.addEventListener("activate", function (e) {
