@@ -144,7 +144,9 @@ public class LindaCallScreen extends CallScreeningService {
             .setCategory(Notification.CATEGORY_CALL)
             .setContentIntent(pi)
             .setAutoCancel(true);
-        if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(quiet ? 600000L : 300000L);
-        nm.notify(("call" + norm(number)).hashCode(), b.build());
+        if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(120000L);
+        int nid = ("call" + norm(number)).hashCode();
+        nm.notify(nid, b.build());
+        LindaCallWatcher.watch(ctx, number, nid, level, sw);
     }
 }

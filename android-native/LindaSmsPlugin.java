@@ -46,7 +46,8 @@ import android.provider.CallLog;
         @Permission(strings = { Manifest.permission.RECEIVE_SMS }, alias = "receiveSms"),
         @Permission(strings = { Manifest.permission.READ_CONTACTS }, alias = "contacts"),
         @Permission(strings = { Manifest.permission.READ_CALL_LOG }, alias = "callLog"),
-        @Permission(strings = { "android.permission.POST_NOTIFICATIONS" }, alias = "notifications")
+        @Permission(strings = { "android.permission.POST_NOTIFICATIONS" }, alias = "notifications"),
+        @Permission(strings = { "android.permission.READ_PHONE_STATE" }, alias = "phoneState")
     }
 )
 public class LindaSmsPlugin extends Plugin {
@@ -252,12 +253,14 @@ public class LindaSmsPlugin extends Plugin {
             return;
         }
         int limit = call.getInt("limit", 150);
+        int total = 0;
         JSArray out = new JSArray();
         try (Cursor c = getContext().getContentResolver().query(
                 Uri.parse("content://sms/inbox"),
                 new String[] { "_id", "address", "body", "date" },
                 null, null, "date DESC")) {
             if (c != null) {
+                total = c.getCount();
                 int n = 0;
                 while (n < limit && c.moveToNext()) {
                     JSObject o = new JSObject();
@@ -274,6 +277,7 @@ public class LindaSmsPlugin extends Plugin {
             return;
         }
         JSObject ret = new JSObject();
+        ret.put("total", total);
         ret.put("messages", out);
         call.resolve(ret);
     }

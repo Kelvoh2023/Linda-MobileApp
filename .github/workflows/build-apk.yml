@@ -41,7 +41,7 @@ jobs:
 
       - name: Add Linda's message protection (native Android code)
         run: |
-          cp android-native/MainActivity.java android-native/LindaSmsPlugin.java android-native/SmsReceiver.java android-native/LindaScanner.java android-native/LindaAlert.java android-native/LindaCallScreen.java android-native/LindaOverlay.java android-native/LindaSyncWorker.java android/app/src/main/java/ke/linda/demo/
+          cp android-native/MainActivity.java android-native/LindaSmsPlugin.java android-native/SmsReceiver.java android-native/LindaScanner.java android-native/LindaAlert.java android-native/LindaCallScreen.java android-native/LindaOverlay.java android-native/LindaCallWatcher.java android-native/LindaSyncWorker.java android/app/src/main/java/ke/linda/demo/
           mkdir -p android/app/src/main/assets/linda
           cp android-native/model.js android/app/src/main/assets/linda/model.js
           python3 android-native/patch_manifest.py android/app/src/main/AndroidManifest.xml
