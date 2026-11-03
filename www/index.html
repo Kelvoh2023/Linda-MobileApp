@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Linda</title>
 <meta name="theme-color" content="#127A43">
-<script>try{var __t=localStorage.getItem("linda_theme");if(__t==="dark"||__t==="light")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
+<script>try{if(localStorage.getItem("linda_theme")==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
@@ -20,15 +20,11 @@
   --f-display:"Bricolage Grotesque","Trebuchet MS",sans-serif; --f-body:"Figtree","Segoe UI",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
   color-scheme:light;
 }
-/* Dark mode: follows the phone unless the person picks Light or Dark in the menu. */
+/* Dark mode: light is the default. The sun/moon button in the header, or Settings, switches it. */
 :root[data-theme="dark"]{
   --page:#070B09; --bg:#0E1511; --card:#16201A; --ink:#E8EFEA; --muted:#9BAEA2; --line:#26332B;
   --green:#4CC083; --green-soft:#153324; --red:#FF7A72; --red-soft:#3A1816; --amber:#E3B24E; --amber-soft:#35290C;
   --brand:#1F8A55; --red-fill:#C5302B; --blue:#8DBAF2; --blue-soft:#14263D; --ok-line:#2C5E43; color-scheme:dark}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --page:#070B09; --bg:#0E1511; --card:#16201A; --ink:#E8EFEA; --muted:#9BAEA2; --line:#26332B;
-  --green:#4CC083; --green-soft:#153324; --red:#FF7A72; --red-soft:#3A1816; --amber:#E3B24E; --amber-soft:#35290C;
-  --brand:#1F8A55; --red-fill:#C5302B; --blue:#8DBAF2; --blue-soft:#14263D; --ok-line:#2C5E43; color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{background:var(--page);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
@@ -1040,6 +1036,8 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
 (function () {
   var M = LindaModel, FL = LindaFlow, I = {
     gear: '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></svg>',
+    moon: '<svg class="i" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>',
+    sun: '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8"/></svg>',
     more: '<svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
     shield: '<svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>',
     home: '<svg class="i" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>',
@@ -1268,7 +1266,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     "Confirmed. KSh 200.00 sent to Mama Mboga."
   ];
 
-  var S = { theme: "system", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
+  var S = { theme: "light", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
   var timers = [], taps = 0, tapT = 0;
   var $ = function (q) { return document.querySelector(q); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -1332,15 +1330,14 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   var G_DEF = { name: "Daniel (Son)", phone: "0712 555 303", protectedName: "Mama Wanjiku" };
   function fill2(str, o) { var k; for (k in o) str = str.split("{" + k + "}").join(o[k]); return str; }
   /* ---------- light and dark mode ---------- */
-  try { var th0 = localStorage.getItem("linda_theme"); if (th0 === "light" || th0 === "dark") S.theme = th0; } catch (e) {}
-  function isDark() { return S.theme === "dark" || (S.theme !== "light" && !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)); }
+  try { if (localStorage.getItem("linda_theme") === "dark") S.theme = "dark"; } catch (e) {}
+  function isDark() { return S.theme === "dark"; }
   function applyTheme() {
-    var root = document.documentElement;
-    if (S.theme === "light" || S.theme === "dark") root.setAttribute("data-theme", S.theme); else root.removeAttribute("data-theme");
-    var dark = isDark(), mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute("content", dark ? "#0E1511" : "#127A43");
+    var root = document.documentElement, dark = isDark();
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    var mt = document.querySelector('meta[name="theme-color"]'); if (mt) mt.setAttribute("content", dark ? "#0E1511" : "#127A43");
     try { var sb = nativePlugin("SystemBars"); if (sb && sb.setStyle) sb.setStyle({ style: dark ? "DARK" : "LIGHT" }).catch(function () {}); } catch (e) {}
   }
-  try { if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (S.theme === "system") applyTheme(); }); } catch (e) {}
   /* ---------- first run, trusted senders ---------- */
   try { S.ob = localStorage.getItem("linda_onboarded") === "1" ? 0 : 1; S.trusted = JSON.parse(localStorage.getItem("linda_trusted") || "[]") || []; } catch (e) { S.ob = 0; }
   function trustKey(from) { var f = String(from || ""); return /\d{7}/.test(f) ? M.normNum(f) : f.toUpperCase(); }
@@ -1664,11 +1661,12 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* ---------- views ---------- */
   function header(title, withTools) {
     return '<div class="hd">' + (withTools ? '<button class="logo" data-a="logo" aria-label="Linda">' + I.shield + "</button>" : "") + "<h2>" + title + "</h2>" +
+      '<button class="gear" data-a="themetoggle" aria-label="' + t("appear") + '">' + (isDark() ? I.sun : I.moon) + "</button>" +
       '<div class="lang" role="group" aria-label="Language"><button data-a="lang" data-v="en" aria-pressed="' + (S.lang === "en") + '">EN</button><button data-a="lang" data-v="sw" aria-pressed="' + (S.lang === "sw") + '">SW</button></div>' +
       '<button class="gear" data-a="menu" aria-label="' + t("menuT") + '">' + I.more + "</button></div>";
   }
   function themeSeg() {
-    return '<div class="seg" role="group" aria-label="' + t("appear") + '">' + [["system", "thSystem"], ["light", "thLight"], ["dark", "thDark"]].map(function (x) {
+    return '<div class="seg" role="group" aria-label="' + t("appear") + '">' + [["light", "thLight"], ["dark", "thDark"]].map(function (x) {
       return '<button data-a="theme" data-v="' + x[0] + '" aria-pressed="' + (S.theme === x[0]) + '">' + t(x[1]) + "</button>";
     }).join("") + "</div>";
   }
@@ -1709,11 +1707,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     h += '<div class="sec">' + t("setTrust") + "</div>" + (S.trusted.length ? S.trusted.map(function (x, i) {
       return '<div class="card" style="display:flex;align-items:center;gap:10px"><span style="flex:1;min-width:0;overflow-wrap:anywhere">' + esc(x.label) + '</span><button class="btn" data-a="untrust" data-v="' + i + '">' + t("setRemove") + "</button></div>";
     }).join("") : '<div class="card"><p class="fine" style="margin:0">' + t("setTrustNone") + "</p></div>");
-    h += '<div class="sec">' + t("setMore") + '</div>' +
-      '<button class="row" data-a="tab" data-v="reports"><div class="av">' + I.msg + '</div><div class="tx"><b>' + t("sent").replace(/^./, function (c) { return c.toUpperCase(); }) + "</b><p>" + S.reports + "</p></div></button>" +
-      '<button class="row" data-a="tab" data-v="console"><div class="av">' + I.shield + '</div><div class="tx"><b>' + t("cnRow") + "</b><p>" + (Relay.room() ? esc(cnStatus()) : t("cnRowSub")) + "</p></div></button>" +
-      '<button class="row" data-a="tab" data-v="about"><div class="av">' + I.spark + '</div><div class="tx"><b>' + t("how") + "</b><p>" + t("howSub") + "</p></div></button>" +
-      '<div class="sec">' + t("setData") + '</div><div class="btns" style="flex-direction:column"><button class="btn w" data-a="clearsent">' + t("setClear") + '</button><button class="btn r w" data-a="wipe">' + t("setWipe") + "</button></div>" +
+    h +=      '<div class="sec">' + t("setData") + '</div><div class="btns" style="flex-direction:column"><button class="btn w" data-a="clearsent">' + t("setClear") + '</button><button class="btn r w" data-a="wipe">' + t("setWipe") + "</button></div>" +
       '<div class="sec">' + t("setAbout") + '</div><div class="card"><b>Linda</b><p class="fine" style="margin:4px 0 0">' + t("setVer") + ": " + esc(S.appVer || "web") + "</p></div>";
     return h;
   }
@@ -1843,7 +1837,6 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     if (S.sheet === "menu") {
       h += '<div class="scrim" data-a="closesheet"></div><div class="sheet msheet"><h3>' + t("menuT") + "</h3>" +
         '<button class="row" data-a="tab" data-v="settings"><div class="av">' + I.gear + '</div><div class="tx"><b>' + t("setTitle") + "</b></div></button>" +
-        '<div class="sec" style="margin:6px 0 0">' + t("appear") + "</div>" + themeSeg() +
         '<button class="row" data-a="tab" data-v="reports"><div class="av">' + I.msg + '</div><div class="tx"><b>' + t("sent").replace(/^./, function (c) { return c.toUpperCase(); }) + "</b><p>" + S.reports + "</p></div></button>" +
         '<button class="row" data-a="tab" data-v="console"><div class="av">' + I.shield + '</div><div class="tx"><b>' + t("cnRow") + "</b></div></button>" +
         '<button class="row" data-a="tab" data-v="about"><div class="av">' + I.spark + '</div><div class="tx"><b>' + t("how") + "</b></div></button></div>";
@@ -1990,7 +1983,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     else if (a === "cntest") { Relay.send("app", { k: "hello" }).then(function (ok) { toast(ok ? t("cnTested") : t("cnBad")); }); }
     else if (a === "tab") { S.tab = v; S.det = null; S.sheet = null; render(); renderOv(); }
     else if (a === "menu") { S.sheet = "menu"; renderOv(); }
-    else if (a === "theme") { S.theme = v; try { if (v === "system") localStorage.removeItem("linda_theme"); else localStorage.setItem("linda_theme", v); } catch (e) {} applyTheme(); render(true); renderOv(); }
+    else if (a === "theme" || a === "themetoggle") { S.theme = a === "themetoggle" ? (isDark() ? "light" : "dark") : v; try { localStorage.setItem("linda_theme", S.theme); } catch (e) {} applyTheme(); render(true); renderOv(); }
     else if (a === "logo") { var nw = Date.now(); taps = nw - tapT < 1200 ? taps + 1 : 1; tapT = nw; if (taps >= 2) { taps = 0; S.sheet = "demo"; renderOv(); } }
     else if (a === "presenter") { S.sheet = "demo"; renderOv(); }
     else if (a === "lang") { S.lang = v; syncNative(); try { localStorage.setItem("linda_lang", v); } catch (e) {} render(true); renderOv(); }
