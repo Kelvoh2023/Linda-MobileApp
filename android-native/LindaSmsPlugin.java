@@ -12,6 +12,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.app.role.RoleManager;
+import androidx.activity.result.ActivityResult;
+import com.getcapacitor.annotation.ActivityCallback;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -62,6 +65,39 @@ public class LindaSmsPlugin extends Plugin {
             launchAddr = null;
         }
         call.resolve(ret);
+    }
+
+    /** Is Linda the phone's caller-ID app yet? (Android 10 and newer) */
+    private boolean callRoleHeld() {
+        if (Build.VERSION.SDK_INT < 29) return false;
+        RoleManager rm = (RoleManager) getContext().getSystemService(Context.ROLE_SERVICE);
+        return rm != null && rm.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING) && rm.isRoleHeld(RoleManager.ROLE_CALL_SCREENING);
+    }
+
+    @PluginMethod
+    public void callScreeningStatus(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("supported", Build.VERSION.SDK_INT >= 29);
+        ret.put("held", callRoleHeld());
+        call.resolve(ret);
+    }
+
+    /** Opens Android's own "make Linda your caller ID app" dialog. */
+    @PluginMethod
+    public void requestCallScreening(PluginCall call) {
+        if (Build.VERSION.SDK_INT < 29) { call.reject("Needs Android 10 or newer"); return; }
+        RoleManager rm = (RoleManager) getContext().getSystemService(Context.ROLE_SERVICE);
+        if (rm == null || !rm.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING)) { call.reject("Not available on this phone"); return; }
+        if (rm.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)) { JSObject r = new JSObject(); r.put("held", true); call.resolve(r); return; }
+        startActivityForResult(call, rm.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING), "roleResult");
+    }
+
+    @ActivityCallback
+    private void roleResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        JSObject r = new JSObject();
+        r.put("held", callRoleHeld());
+        call.resolve(r);
     }
 
     @PluginMethod
@@ -172,6 +208,8 @@ public class LindaSmsPlugin extends Plugin {
         if (db != null) e.putString("db", db);
         String lang = call.getString("lang");
         if (lang != null) e.putString("lang", lang);
+        if (call.hasOption("calls")) e.putBoolean("calls", Boolean.TRUE.equals(call.getBoolean("calls")));
+        if (call.hasOption("silence")) e.putBoolean("silence", Boolean.TRUE.equals(call.getBoolean("silence")));
         String trusted = call.getString("trusted");
         if (trusted != null) e.putString("trusted", trusted);
         e.apply();

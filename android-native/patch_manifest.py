@@ -17,5 +17,15 @@ receiver = '''
 if ".SmsReceiver" not in s:
     i = s.rindex("</application>")
     s = s[:i] + receiver + "    " + s[i:]
+service = '''
+        <service android:name=".LindaCallScreen" android:exported="true" android:permission="android.permission.BIND_SCREENING_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService" />
+            </intent-filter>
+        </service>
+'''
+if ".LindaCallScreen" not in s:
+    i = s.rindex("</application>")
+    s = s[:i] + service + "    " + s[i:]
 open(path, "w", encoding="utf-8").write(s)
 print("manifest patched")
