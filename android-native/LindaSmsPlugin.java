@@ -324,6 +324,10 @@ public class LindaSmsPlugin extends Plugin {
         if (db != null) e.putString("db", db);
         String lang = call.getString("lang");
         if (lang != null) e.putString("lang", lang);
+        String gp = call.getString("gprotect"), gw = call.getString("gwatch"), gs = call.getString("gsince");
+        if (gp != null) e.putString("gprotect", gp);
+        if (gw != null) e.putString("gwatch", gw);
+        if (gs != null && !gs.isEmpty()) e.putString("g_app_since", gs);
         String rep = call.getString("reported");
         if (rep != null) e.putString("reported", rep);
         if (call.hasOption("calls")) e.putBoolean("calls", Boolean.TRUE.equals(call.getBoolean("calls")));
@@ -355,6 +359,12 @@ public class LindaSmsPlugin extends Plugin {
         try {
             JSONObject r = LindaScanner.scan(ctx, address, body);
             if (!"ok".equals(r.optString("level", "ok"))) LindaAlert.show(ctx, address, r, sp.getString("lang", "en"), date);
+            if ("scam".equals(r.optString("level", "ok"))) {
+                boolean imp = false;
+                org.json.JSONArray rs = r.optJSONArray("reasons");
+                for (int i = 0; rs != null && i < rs.length(); i++) { JSONObject o = rs.optJSONObject(i); if (o != null && "impersonation".equals(o.optString("k"))) imp = true; }
+                LindaGuardian.notifySync(ctx, imp ? "imp" : "sms", address, 0);
+            }
         } catch (Throwable t) {
             // The scanner could not run. Fall back to the simple keyword check so the person still gets a nudge.
             if (quickRisky(address, body)) nudge(ctx, address);

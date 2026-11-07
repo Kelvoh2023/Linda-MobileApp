@@ -42,3 +42,11 @@ Only users listed in `staff` can see all reports and confirm numbers. Everyone e
 - Each phone sees only its own reports. The staff see all.
 - One report per phone per number per day; 40 per hour per phone (blocks spam).
 - Nothing is sent unless the person taps Report.
+
+## Family Guardian (added later)
+Run the updated `schema.sql` again (it is safe to re-run). Nothing else to set up.
+- The protected person opens Linda, Family, My guardian, creates a 6-character code and shares it.
+- The guardian opens Linda, Family, People I protect, and enters the code. Codes work once and expire in 24 hours.
+- Guardians are told the kind of scam and the number only. They never see message text, calls or contacts.
+- Alerts reach a guardian's open app within a minute and, with Linda closed, about every 15 minutes (Android decides exactly when).
+- Either person can remove the link at any time, which deletes its alerts.

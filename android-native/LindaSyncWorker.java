@@ -33,7 +33,7 @@ import java.util.Set;
 public class LindaSyncWorker extends Worker {
     public LindaSyncWorker(@NonNull Context ctx, @NonNull WorkerParameters p) { super(ctx, p); }
 
-    private String[] http(String method, String url, String key, String bearer, String body) throws Exception {
+    static String[] http(String method, String url, String key, String bearer, String body) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setRequestMethod(method);
         c.setConnectTimeout(15000);
@@ -57,7 +57,7 @@ public class LindaSyncWorker extends Worker {
     }
 
     /** A background-only anonymous sign-in, separate from the one the app uses. It can only read the public fraud list. */
-    private String token(SharedPreferences sp, String base, String key) throws Exception {
+    static String token(SharedPreferences sp, String base, String key) throws Exception {
         long exp = sp.getLong("bg_exp", 0);
         String tok = sp.getString("bg_token", "");
         if (!tok.isEmpty() && exp - System.currentTimeMillis() > 60000) return tok;
@@ -138,9 +138,51 @@ public class LindaSyncWorker extends Worker {
                 }
                 sp.edit().putString("bg_bc", id).apply();
             }
+            pollGuardian(ctx, sp, base, key, tok, sw);
             return Result.success();
         } catch (Exception ex) {
             return Result.retry();
+        }
+    }
+
+    /** If this phone is a guardian: ask the server for new alerts about the people it protects. */
+    private void pollGuardian(Context ctx, SharedPreferences sp, String base, String key, String tok, boolean sw) {
+        try {
+            JSONArray keys = new JSONArray(sp.getString("gwatch", "[]"));
+            if (keys.length() == 0) return;
+            String mine = sp.getString("g_since", "");
+            String app = sp.getString("g_app_since", "");
+            String since = mine.compareTo(app) >= 0 ? mine : app;
+            if (since.isEmpty()) {
+                java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'+00:00'", java.util.Locale.US);
+                f.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                since = f.format(new java.util.Date());
+            }
+            String newest = since;
+            for (int i = 0; i < keys.length(); i++) {
+                String body = new JSONObject().put("p_key", keys.getString(i)).put("p_since", since).toString();
+                String[] r = http("POST", base + "/rest/v1/rpc/guardian_poll", key, tok, body);
+                if (!"200".equals(r[0])) continue;
+                JSONArray rows = new JSONArray(r[1]);
+                for (int j = 0; j < rows.length(); j++) {
+                    JSONObject a = rows.getJSONObject(j);
+                    String who = a.optString("protected_name", ""); if (who.isEmpty()) who = sw ? "Mpendwa wako" : "Someone you protect";
+                    String n = a.optString("number", "");
+                    String kind = a.optString("kind");
+                    String text;
+                    if ("sms".equals(kind)) text = sw ? "SMS ya ulaghai imezuiwa kwenye simu ya " + who + ". Ilitoka " + n + "." : "A scam text was blocked on " + who + "'s phone. It came from " + n + ".";
+                    else if ("imp".equals(kind)) text = sw ? "Ujumbe unaojifanya mtu anayemjua " + who + " uliomba pesa. Ulitoka " + n + "." : "A text pretending to be someone " + who + " knows asked for money. It came from " + n + ".";
+                    else if ("call".equals(kind)) text = sw ? who + " anapigiwa simu na " + n + ", namba iliyoripotiwa kwa ulaghai." : who + " is getting a call from " + n + ", a number reported for fraud.";
+                    else if ("payblock".equals(kind)) text = sw ? who + " alikuwa karibu kutuma KSh " + a.optInt("amount") + " kwa " + n + ", kisha akaghairi." : who + " was about to send KSh " + a.optInt("amount") + " to " + n + ", then cancelled after Linda's warning.";
+                    else text = sw ? who + " alituma KSh " + a.optInt("amount") + " kwa " + n + " licha ya onyo la Linda. Mpigie sasa." : who + " sent KSh " + a.optInt("amount") + " to " + n + " after Linda warned against it. Call them now.";
+                    notify(ctx, ("g" + a.optString("id")).hashCode(), sw ? "Linda: " + who + " yuko hatarini" : "Linda: " + who + " may be at risk", text);
+                    String at = a.optString("created_at", "");
+                    if (at.compareTo(newest) > 0) newest = at;
+                }
+            }
+            sp.edit().putString("g_since", newest).apply();
+        } catch (Exception e) {
+            // try again next time
         }
     }
 

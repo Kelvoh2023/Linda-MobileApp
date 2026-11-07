@@ -54,6 +54,7 @@ public class LindaCallScreen extends CallScreeningService {
                     }
                     if ("scam".equals(level) && sp.getBoolean("silence", false)) resp.setSilenceCall(true);
                 }
+                if ("scam".equals(level)) LindaGuardian.notifyAsync(this, "call", number, 0);
                 if ("none".equals(level)) level = "unknown";
                 if (!"contact".equals(level) && sp.getBoolean("calls", true)) {
                     notifyCall(this, number, level, hit, "sw".equals(sp.getString("lang", "en")));

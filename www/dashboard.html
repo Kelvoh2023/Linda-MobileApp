@@ -525,6 +525,27 @@ var Cloud = (function () {
     });
   }
 
+  /* ---------- Family Guardian ---------- */
+  function rpcD(name, args) {
+    return dev.rpc(name, args).then(function (r) {
+      if (!r.ok) { var e = new Error((r.json && r.json.message) || ("rpc " + r.status)); e.status = r.status; throw e; }
+      return r.json;
+    });
+  }
+  function rows(path) {
+    return dev.get(path).then(function (r) { if (!r.ok || !Array.isArray(r.json)) throw new Error("read " + r.status); return r.json; });
+  }
+  var guardian = {
+    me: function () { var u = dev.user(); return u ? u.id : null; },
+    create: function (name, phone) { return rpcD("create_guardian_link", { p_name: name || "", p_phone: phone || "" }).then(function (a) { return a && a[0]; }); },
+    join: function (code, name, phone) { return rpcD("join_guardian_link", { p_code: code || "", p_name: name || "", p_phone: phone || "" }).then(function (a) { return (a && a[0]) || null; }); },
+    end: function (id) { return rpcD("end_guardian_link", { p_id: id }); },
+    links: function () { return rows("guardian_links?select=*&status=neq.ended&order=created_at.desc"); },
+    alerts: function () { return rows("guardian_alerts?select=*&order=created_at.desc&limit=100"); },
+    keys: function () { return rpcD("my_guardian_keys", {}).then(function (a) { return a || []; }); },
+    send: function (kind, number, amount, level) { return rpcD("send_guardian_alert", { p_kind: kind, p_number: number || "", p_amount: Math.round(amount || 0), p_level: level === "amber" ? "amber" : "red" }); }
+  };
+
   /* ---------- fraud console side ---------- */
   var staff = client("linda_cloud_staff", false);
   function isStaff() { return staff.get("staff?select=user_id").then(function (r) { return r.ok && Array.isArray(r.json) && r.json.length > 0; }); }
@@ -578,7 +599,7 @@ var Cloud = (function () {
   }
   function act(name, args) { return staff.rpc(name, args).then(function (r) { if (!r.ok) throw new Error((r.json && r.json.message) || ("rpc " + r.status)); return true; }); }
 
-  return { on: on, report: report, sendCase: sendCase, stopped: stopped, sync: sync, flush: flush,
+  return { on: on, guardian: guardian, ready: function () { return dev.signedIn() ? Promise.resolve() : dev.get("numbers?select=number_norm&limit=1").then(function () {}); }, report: report, sendCase: sendCase, stopped: stopped, sync: sync, flush: flush,
     staff: staff, isStaff: isStaff, fetchState: fetchState, buildState: buildState,
     confirm: function (n, type) { return act("confirm_number", { p_number: n, p_type: type || null }); },
     verify: function (n, name) { return act("verify_number", { p_number: n, p_name: name }); },

@@ -1051,6 +1051,27 @@ var Cloud = (function () {
     });
   }
 
+  /* ---------- Family Guardian ---------- */
+  function rpcD(name, args) {
+    return dev.rpc(name, args).then(function (r) {
+      if (!r.ok) { var e = new Error((r.json && r.json.message) || ("rpc " + r.status)); e.status = r.status; throw e; }
+      return r.json;
+    });
+  }
+  function rows(path) {
+    return dev.get(path).then(function (r) { if (!r.ok || !Array.isArray(r.json)) throw new Error("read " + r.status); return r.json; });
+  }
+  var guardian = {
+    me: function () { var u = dev.user(); return u ? u.id : null; },
+    create: function (name, phone) { return rpcD("create_guardian_link", { p_name: name || "", p_phone: phone || "" }).then(function (a) { return a && a[0]; }); },
+    join: function (code, name, phone) { return rpcD("join_guardian_link", { p_code: code || "", p_name: name || "", p_phone: phone || "" }).then(function (a) { return (a && a[0]) || null; }); },
+    end: function (id) { return rpcD("end_guardian_link", { p_id: id }); },
+    links: function () { return rows("guardian_links?select=*&status=neq.ended&order=created_at.desc"); },
+    alerts: function () { return rows("guardian_alerts?select=*&order=created_at.desc&limit=100"); },
+    keys: function () { return rpcD("my_guardian_keys", {}).then(function (a) { return a || []; }); },
+    send: function (kind, number, amount, level) { return rpcD("send_guardian_alert", { p_kind: kind, p_number: number || "", p_amount: Math.round(amount || 0), p_level: level === "amber" ? "amber" : "red" }); }
+  };
+
   /* ---------- fraud console side ---------- */
   var staff = client("linda_cloud_staff", false);
   function isStaff() { return staff.get("staff?select=user_id").then(function (r) { return r.ok && Array.isArray(r.json) && r.json.length > 0; }); }
@@ -1104,7 +1125,7 @@ var Cloud = (function () {
   }
   function act(name, args) { return staff.rpc(name, args).then(function (r) { if (!r.ok) throw new Error((r.json && r.json.message) || ("rpc " + r.status)); return true; }); }
 
-  return { on: on, report: report, sendCase: sendCase, stopped: stopped, sync: sync, flush: flush,
+  return { on: on, guardian: guardian, ready: function () { return dev.signedIn() ? Promise.resolve() : dev.get("numbers?select=number_norm&limit=1").then(function () {}); }, report: report, sendCase: sendCase, stopped: stopped, sync: sync, flush: flush,
     staff: staff, isStaff: isStaff, fetchState: fetchState, buildState: buildState,
     confirm: function (n, type) { return act("confirm_number", { p_number: n, p_type: type || null }); },
     verify: function (n, name) { return act("verify_number", { p_number: n, p_name: name }); },
@@ -1394,7 +1415,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       setWipe: "Delete all Linda data on this phone", setWipeQ: "Delete everything Linda stored on this phone? This turns protection off and restarts Linda.",
       setAbout: "About", setVer: "Version", setMore: "More", trustBtn: "Trust this sender", trustDone: "Done. Linda will not flag messages from this sender.", trustRemoved: "Removed from trusted senders",
       rpTitle: "Reports you sent", rpEmpty: "You have not sent any reports yet. When you report a scam, it is listed here.", rpLocal: "Saved on this phone", rpSent: "Sent. Under review", rpConf: "Confirmed by Safaricom",
-      rpCase: "Scam case", alreadyRep: "You already reported this number ({d}). Thank you.", callsTab: "Calls", setOverlay: "Warning over the call screen", yes: "Yes", no: "No", setNotif: "Notifications allowed", setCallTest: "Send a test label", setCallTestSent: "Test label sent. Pull down your notifications.", callsTitle: "Recent calls", callsSub: "Check and report a number that called you", callsNote: "Calls still ring and are answered in your normal phone app. Come here after a call to check the number or report it as a scam.", callsLast: "Last caller you tapped", callsTapped: "From the Linda notification", callsPerm: "Allow Linda to see your recent calls (only the number, type and time). They stay on this phone until you tap Report.", callsAllow: "Allow", callsNone: "No recent calls found.", callsRecent: "Latest first", callsIn: "Incoming", callsMissed: "Missed", callsRej: "Declined", setCalls: "Caller labels", setCallsOn: "Caller labels are on", setCallsOff: "Caller labels are off", setCallsGo: "Turn on", setCallsNote: "Linda tells you who is calling before you answer: verified Safaricom numbers, and numbers reported as scams. It never blocks a call and never reads your calls. Android will ask you to choose Linda as your caller ID app.", setSilence: "Ring silently for confirmed scam numbers", setRegion: "Your county", setRegionNone: "Not set", setRegionNote: "Shared with the fraud team with your reports so they can see where scams are spreading. Your name and number are never sent.", setServer: "Linda server", setSrvOn: "Connected. Updated", setSrvOff: "Cannot reach the server. Linda still protects you using the last list it saved.", setSrvWait: "Connecting...", setSrvNow: "Update now", rpConnect: "Connect to the fraud console to share reports with the team.",
+      rpCase: "Scam case", glCodeT: "Your code", glCodeNote: "Give this code to the person who will look after you. It works once and expires in 24 hours.", glShare: "Share code", glShareMsg: "Join me on Linda Family Guardian. Open Linda, then Family, then People I protect, and enter this code: {c}", glCreate: "Create a code", glMyName: "Your name", glMyPhone: "Your number (optional, so your guardian can call you)", glActive: "Looking after you", glRemove: "Remove", glCancel: "Cancel code", glWatch: "People I protect", glJoinT: "Join with a code", glCode: "6-character code", glPhone2: "Your number (optional, so they can call you)", glJoin: "Join", glBad: "That code is not valid or has expired.", glTries: "Too many tries. Please wait an hour.", glJoined: "You are now a guardian.", glNone: "You are not looking after anyone yet. Ask the person to create a code in Linda, Family, My guardian.", glNoAl: "No alerts. If a scam reaches {p}, you will see it here and get a notification.", glOffline: "Could not reach the server. Try again.", glEnded: "Removed.", glExpires: "Expires within 24 hours. Waiting for your guardian.", glShareCopied: "Code copied. Paste it in a message.", glSeesYou: "Your guardian is told when a scam reaches you. They never see your messages.", glNew: "New alert for {p}", famWatch: "People I protect", glMax: "You can have up to 5 guardians.", alreadyRep: "You already reported this number ({d}). Thank you.", callsTab: "Calls", setOverlay: "Warning over the call screen", yes: "Yes", no: "No", setNotif: "Notifications allowed", setCallTest: "Send a test label", setCallTestSent: "Test label sent. Pull down your notifications.", callsTitle: "Recent calls", callsSub: "Check and report a number that called you", callsNote: "Calls still ring and are answered in your normal phone app. Come here after a call to check the number or report it as a scam.", callsLast: "Last caller you tapped", callsTapped: "From the Linda notification", callsPerm: "Allow Linda to see your recent calls (only the number, type and time). They stay on this phone until you tap Report.", callsAllow: "Allow", callsNone: "No recent calls found.", callsRecent: "Latest first", callsIn: "Incoming", callsMissed: "Missed", callsRej: "Declined", setCalls: "Caller labels", setCallsOn: "Caller labels are on", setCallsOff: "Caller labels are off", setCallsGo: "Turn on", setCallsNote: "Linda tells you who is calling before you answer: verified Safaricom numbers, and numbers reported as scams. It never blocks a call and never reads your calls. Android will ask you to choose Linda as your caller ID app.", setSilence: "Ring silently for confirmed scam numbers", setRegion: "Your county", setRegionNone: "Not set", setRegionNote: "Shared with the fraud team with your reports so they can see where scams are spreading. Your name and number are never sent.", setServer: "Linda server", setSrvOn: "Connected. Updated", setSrvOff: "Cannot reach the server. Linda still protects you using the last list it saved.", setSrvWait: "Connecting...", setSrvNow: "Update now", rpConnect: "Connect to the fraud console to share reports with the team.",
       cnTitle: "Fraud console", cnIntro: "The fraud console is the screen the Safaricom team uses. Open it on another device, then type the 6-letter code it shows. After that, every report you send here appears there, and numbers they confirm come back to this phone.",
       cnCode: "Code from the console", cnConnect: "Connect", cnDisconnect: "Disconnect", cnOn: "Connected to the fraud console", cnWait: "Connecting...", cnOff: "Not connected", cnBad: "Cannot reach the console. Check your internet.", cnBadCode: "The code has 6 letters or numbers.",
       cnNote: "Demo only. Reports travel through a free public relay using your secret code. A real Linda uses Safaricom's secure servers.", cnRow: "Fraud console", cnRowSub: "Connect this phone to the console", cnOpen: "Console address", cnTest: "Send a test", cnTested: "Test sent",
@@ -1485,7 +1506,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       setWipe: "Futa data yote ya Linda kwenye simu hii", setWipeQ: "Futa kila kitu ambacho Linda imehifadhi kwenye simu hii? Hii itazima ulinzi na kuwasha Linda upya.",
       setAbout: "Kuhusu", setVer: "Toleo", setMore: "Zaidi", trustBtn: "Amini mtumaji huyu", trustDone: "Sawa. Linda haitaweka alama kwenye jumbe za mtumaji huyu.", trustRemoved: "Ameondolewa kwenye watumaji unaowaamini",
       rpTitle: "Ripoti ulizotuma", rpEmpty: "Bado hujatuma ripoti yoyote. Ukiripoti ulaghai, utaorodheshwa hapa.", rpLocal: "Imehifadhiwa kwenye simu hii", rpSent: "Imetumwa. Inakaguliwa", rpConf: "Imethibitishwa na Safaricom",
-      rpCase: "Kesi ya ulaghai", alreadyRep: "Tayari uliripoti namba hii ({d}). Asante.", callsTab: "Simu", setOverlay: "Onyo juu ya skrini ya simu", yes: "Ndiyo", no: "Hapana", setNotif: "Arifa zimeruhusiwa", setCallTest: "Tuma lebo ya majaribio", setCallTestSent: "Lebo ya majaribio imetumwa. Telezesha arifa zako chini.", callsTitle: "Simu za hivi karibuni", callsSub: "Angalia na uripoti namba iliyokupigia", callsNote: "Simu bado zinalia na kupokelewa kwenye programu yako ya kawaida ya simu. Rudi hapa baada ya simu kuangalia namba au kuiripoti kuwa ya ulaghai.", callsLast: "Mpigaji wa mwisho uliyegusa", callsTapped: "Kutoka kwenye arifa ya Linda", callsPerm: "Ruhusu Linda kuona simu zako za hivi karibuni (namba, aina na muda tu). Hubaki kwenye simu hii hadi ugonge Ripoti.", callsAllow: "Ruhusu", callsNone: "Hakuna simu za hivi karibuni.", callsRecent: "Mpya kwanza", callsIn: "Iliyoingia", callsMissed: "Ambayo haikupokelewa", callsRej: "Iliyokataliwa", setCalls: "Lebo za wapigaji", setCallsOn: "Lebo za wapigaji zimewashwa", setCallsOff: "Lebo za wapigaji zimezimwa", setCallsGo: "Washa", setCallsNote: "Linda hukuambia anayepiga kabla ya kupokea: namba za Safaricom zilizothibitishwa, na namba zilizoripotiwa kuwa za ulaghai. Haizuii simu wala kusikiliza simu zako. Android itakuuliza uchague Linda kama programu yako ya kitambulisho cha mpigaji.", setSilence: "Lia kimya kwa namba za ulaghai zilizothibitishwa", setRegion: "Kaunti yako", setRegionNone: "Haijawekwa", setRegionNote: "Hutumwa kwa timu ya ulaghai pamoja na ripoti zako ili waone ulaghai unapoenea. Jina na namba yako havitumwi kamwe.", setServer: "Seva ya Linda", setSrvOn: "Imeunganishwa. Imesasishwa", setSrvOff: "Seva haipatikani. Linda bado inakulinda kwa orodha ya mwisho iliyohifadhiwa.", setSrvWait: "Inaunganisha...", setSrvNow: "Sasisha sasa", rpConnect: "Unganisha kwenye kituo cha ulaghai ili kushiriki ripoti na timu.",
+      rpCase: "Kesi ya ulaghai", glCodeT: "Msimbo wako", glCodeNote: "Mpe msimbo huu mtu atakayekulinda. Unafanya kazi mara moja na unaisha baada ya saa 24.", glShare: "Tuma msimbo", glShareMsg: "Jiunge nami kwenye Linda Mlinzi wa Familia. Fungua Linda, kisha Familia, kisha Ninaowalinda, na uweke msimbo huu: {c}", glCreate: "Tengeneza msimbo", glMyName: "Jina lako", glMyPhone: "Namba yako (hiari, mlinzi akupigie)", glActive: "Anakulinda", glRemove: "Ondoa", glCancel: "Futa msimbo", glWatch: "Ninaowalinda", glJoinT: "Jiunge kwa msimbo", glCode: "Msimbo wa herufi 6", glPhone2: "Namba yako (hiari, wakupigie)", glJoin: "Jiunge", glBad: "Msimbo huo si sahihi au umeisha muda.", glTries: "Majaribio mengi. Tafadhali subiri saa moja.", glJoined: "Sasa wewe ni mlinzi.", glNone: "Bado humlindi mtu yeyote. Mwombe atengeneze msimbo kwenye Linda, Familia, Mlinzi wangu.", glNoAl: "Hakuna tahadhari. Ulaghai ukimfikia {p}, utaona hapa na kupata arifa.", glOffline: "Seva haipatikani. Jaribu tena.", glEnded: "Imeondolewa.", glExpires: "Unaisha ndani ya saa 24. Inasubiri mlinzi wako.", glShareCopied: "Msimbo umenakiliwa. Uubandike kwenye ujumbe.", glSeesYou: "Mlinzi wako hujulishwa ulaghai ukikufikia. Haoni jumbe zako kamwe.", glNew: "Tahadhari mpya kwa {p}", famWatch: "Ninaowalinda", glMax: "Unaweza kuwa na walinzi hadi 5.", alreadyRep: "Tayari uliripoti namba hii ({d}). Asante.", callsTab: "Simu", setOverlay: "Onyo juu ya skrini ya simu", yes: "Ndiyo", no: "Hapana", setNotif: "Arifa zimeruhusiwa", setCallTest: "Tuma lebo ya majaribio", setCallTestSent: "Lebo ya majaribio imetumwa. Telezesha arifa zako chini.", callsTitle: "Simu za hivi karibuni", callsSub: "Angalia na uripoti namba iliyokupigia", callsNote: "Simu bado zinalia na kupokelewa kwenye programu yako ya kawaida ya simu. Rudi hapa baada ya simu kuangalia namba au kuiripoti kuwa ya ulaghai.", callsLast: "Mpigaji wa mwisho uliyegusa", callsTapped: "Kutoka kwenye arifa ya Linda", callsPerm: "Ruhusu Linda kuona simu zako za hivi karibuni (namba, aina na muda tu). Hubaki kwenye simu hii hadi ugonge Ripoti.", callsAllow: "Ruhusu", callsNone: "Hakuna simu za hivi karibuni.", callsRecent: "Mpya kwanza", callsIn: "Iliyoingia", callsMissed: "Ambayo haikupokelewa", callsRej: "Iliyokataliwa", setCalls: "Lebo za wapigaji", setCallsOn: "Lebo za wapigaji zimewashwa", setCallsOff: "Lebo za wapigaji zimezimwa", setCallsGo: "Washa", setCallsNote: "Linda hukuambia anayepiga kabla ya kupokea: namba za Safaricom zilizothibitishwa, na namba zilizoripotiwa kuwa za ulaghai. Haizuii simu wala kusikiliza simu zako. Android itakuuliza uchague Linda kama programu yako ya kitambulisho cha mpigaji.", setSilence: "Lia kimya kwa namba za ulaghai zilizothibitishwa", setRegion: "Kaunti yako", setRegionNone: "Haijawekwa", setRegionNote: "Hutumwa kwa timu ya ulaghai pamoja na ripoti zako ili waone ulaghai unapoenea. Jina na namba yako havitumwi kamwe.", setServer: "Seva ya Linda", setSrvOn: "Imeunganishwa. Imesasishwa", setSrvOff: "Seva haipatikani. Linda bado inakulinda kwa orodha ya mwisho iliyohifadhiwa.", setSrvWait: "Inaunganisha...", setSrvNow: "Sasisha sasa", rpConnect: "Unganisha kwenye kituo cha ulaghai ili kushiriki ripoti na timu.",
       cnTitle: "Kituo cha ulaghai", cnIntro: "Kituo cha ulaghai ni skrini inayotumiwa na timu ya Safaricom. Kifungue kwenye kifaa kingine, kisha andika msimbo wa herufi 6 unaoonyeshwa. Baada ya hapo, kila ripoti unayotuma itaonekana huko, na namba wanazothibitisha zitarudi kwenye simu hii.",
       cnCode: "Msimbo kutoka kituo", cnConnect: "Unganisha", cnDisconnect: "Tenganisha", cnOn: "Imeunganishwa na kituo cha ulaghai", cnWait: "Inaunganisha...", cnOff: "Haijaunganishwa", cnBad: "Kituo hakipatikani. Angalia intaneti yako.", cnBadCode: "Msimbo una herufi au tarakimu 6.",
       cnNote: "Kwa majaribio tu. Ripoti hupitia mfumo wa umma wa bure kwa kutumia msimbo wako wa siri. Linda halisi hutumia seva salama za Safaricom.", cnRow: "Kituo cha ulaghai", cnRowSub: "Unganisha simu hii na kituo", cnOpen: "Anwani ya kituo", cnTest: "Tuma jaribio", cnTested: "Jaribio limetumwa",
@@ -1529,7 +1550,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     "Confirmed. KSh 200.00 sent to Mama Mboga."
   ];
 
-  var S = { setup: false, rep: {}, overlay: null, cnotif: null, calls: { list: [], denied: false, busy: false }, lastCall: "", callRole: null, silence: false, region: "", cstat: "off", theme: "light", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, total: 0, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
+  var S = { gl: { links: [], alerts: [], busy: false, err: "", fresh: null, seen: null }, setup: false, rep: {}, overlay: null, cnotif: null, calls: { list: [], denied: false, busy: false }, lastCall: "", callRole: null, silence: false, region: "", cstat: "off", theme: "light", ob: 0, trusted: [], appVer: "", lang: "en", tab: "home", msg: null, sheet: null, ov: null, chat: [], flow: null, reports: 0, sent: [], rstat: "off", done: {}, events: seedEvents(), det: null, actTab: "alerts", live: { on: false, total: 0, msgs: [], contacts: [], cver: 0, busy: false, err: "", denied: false, listening: false }, notifOK: null, pay: { num: "", amt: "" }, famTab: "mine", bdis: 0, shared: Shared.load() };
   var timers = [], taps = 0, tapT = 0;
   var $ = function (q) { return document.querySelector(q); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -1615,7 +1636,15 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   S.sent = loadSent(); S.reports = S.sent.length;
   function money(n) { return Number(n).toLocaleString("en-KE"); }
   function payReason(x) { return fill2(t(x.k), { c: x.c, ty: x.ty, a: x.a, b: x.b }); }
+  function myGuards() { var me = Cloud.guardian.me(); return S.gl.links.filter(function (l) { return l.protected === me && l.status === "active"; }); }
+  function watching() { var me = Cloud.guardian.me(); return S.gl.links.filter(function (l) { return l.guardian === me && l.status === "active"; }); }
   function gAlert(k, n, a, lvl) {
+    if (Cloud.on()) {
+      var mg = myGuards(); if (!mg.length) return;
+      Cloud.guardian.send(k, n || "", a || 0, lvl).catch(function () {});
+      toast(fill2(t("gTold"), { g: mg[0].guardian_name || t("glActive") }));
+      return;
+    }
     var g = S.shared.guardian; if (!g) return;
     S.shared = Shared.addAlert({ k: k, n: n || "", a: a || 0, lvl: lvl || "red" });
     toast(fill2(t("gTold"), { g: g.name }));
@@ -1853,7 +1882,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     syncT = setTimeout(function () {
       syncT = null;
       var sms = SMS(); if (!sms) return;
-      try { sms.syncState({ enabled: !!S.live.on, lang: S.lang, reported: JSON.stringify(Object.keys(S.rep)), calls: true, silence: !!S.silence, db: JSON.stringify(S.shared.db), trusted: JSON.stringify(S.trusted.map(function (x) { return x.k; })) }).catch(function () {}); } catch (e) {}
+      try { sms.syncState({ enabled: !!S.live.on, lang: S.lang, gsince: S.gl.maxAt || "", gprotect: JSON.stringify((S.gl.keys || []).filter(function (k) { return k.role === "protected"; }).map(function (k) { return k.key; })), gwatch: JSON.stringify((S.gl.keys || []).filter(function (k) { return k.role === "guardian"; }).map(function (k) { return k.key; })), reported: JSON.stringify(Object.keys(S.rep)), calls: true, silence: !!S.silence, db: JSON.stringify(S.shared.db), trusted: JSON.stringify(S.trusted.map(function (x) { return x.k; })) }).catch(function () {}); } catch (e) {}
     }, 300);
   }
   function enableLive() {
@@ -1921,9 +1950,39 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       var old = S.shared.broadcast ? S.shared.broadcast.x : null;
       S.shared = Shared.applyRemote(r.rows, r.broadcast, r.full);
       if ((r.broadcast ? r.broadcast.text : null) !== old) S.bdis = 0;
-      S.cstat = "live"; syncNative();
+      S.cstat = "live"; syncNative(); loadGuardian(true);
       if (S.tab === "home" || S.tab === "settings" || S.tab === "reports") render(true);
     }, function () { cloudBusy = false; S.cstat = "offline"; if (S.tab === "settings") render(true); });
+  }
+  /* Family Guardian from the server: my guardians, the people I protect, and their alerts */
+  function loadGuardian(quiet) {
+    if (!Cloud.on()) return;
+    S.gl.busy = true;
+    Cloud.guardian.links().then(function (links) {
+      return Promise.all([Cloud.guardian.alerts(), Cloud.guardian.keys()]).then(function (a) {
+        S.gl.links = links; S.gl.alerts = a[0]; S.gl.busy = false; S.gl.err = "";
+        var me = Cloud.guardian.me(), maxId = 0, fresh = [];
+        var seen = null; try { var sv = localStorage.getItem("linda_gseen"); seen = sv === null ? null : Number(sv); } catch (e) {}
+        a[0].forEach(function (x) {
+          var l = links.filter(function (k) { return k.id === x.link_id; })[0];
+          if (x.id > maxId) maxId = x.id;
+          if (l && l.guardian === me && (!S.gl.maxAt || x.created_at > S.gl.maxAt)) S.gl.maxAt = x.created_at;
+          if (l && l.guardian === me && seen !== null && x.id > seen) fresh.push({ x: x, l: l });
+        });
+        if (seen === null || maxId > seen) { try { localStorage.setItem("linda_gseen", String(Math.max(maxId, seen || 0))); } catch (e) {} }
+        fresh.reverse().forEach(function (f) {
+          var txt = alertText({ k: f.x.kind, n: f.x.number, a: f.x.amount }, { protectedName: f.l.protected_name || "?" });
+          toast(txt); notify(fill2(t("glNew"), { p: f.l.protected_name || "?" }), txt, null);
+        });
+        S.gl.keys = a[1];
+        /* while a code is waiting on the Family screen, look again every few seconds so the guardian's joining shows up */
+        if (!S.gl.waitT && S.tab === "fam" && links.some(function (k) { return k.protected === me && k.status === "pending"; })) {
+          S.gl.waitT = setTimeout(function () { S.gl.waitT = null; if (S.tab === "fam") loadGuardian(true); }, 5000);
+        }
+        syncNative();
+        if (!quiet || fresh.length || S.tab === "fam") render(true);
+      });
+    }).catch(function () { S.gl.busy = false; if (S.tab === "fam") render(true); });
   }
   function startCloud() {
     if (cloudT) { clearInterval(cloudT); cloudT = null; }
@@ -2083,7 +2142,33 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
         : '<label class="lb" for="cnCode">' + t("cnCode") + '</label><input class="fld" id="cnCode" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:.2em;font-family:var(--f-mono)"><div class="btns" style="margin-top:14px"><button class="btn p w" data-a="cnon">' + t("cnConnect") + "</button></div>") + "</div>" +
       '<p class="fine">' + t("cnNote") + "</p>";
   }
+  function vFamLive() {
+    var me = Cloud.guardian.me(), mine = S.gl.links.filter(function (l) { return l.protected === me; }), watch = watching();
+    var h = header(t("fam"), false) + '<div class="seg" role="group"><button data-a="famtab" data-v="mine" aria-pressed="' + (S.famTab === "mine") + '">' + t("famMine") + '</button><button data-a="famtab" data-v="view" aria-pressed="' + (S.famTab === "view") + '">' + t("famWatch") + "</button></div>";
+    if (S.famTab === "mine") {
+      h += '<div class="card"><p style="margin:0 0 10px;font-size:14px">' + t("famIntro") + '</p><div class="shares"><div><span style="color:var(--green)">' + I.check + "</span><span>" + t("famSees") + '</span></div><div><span style="color:var(--red)">' + I.alert + "</span><span>" + t("famNever") + "</span></div></div></div>";
+      mine.forEach(function (l) {
+        if (l.status === "active") h += '<div class="card status"><h3>' + t("glActive") + '</h3><p><span class="dot"></span>' + esc(l.guardian_name || "?") + (l.guardian_phone ? " · " + esc(l.guardian_phone) : "") + '</p><div class="btns"><button class="btn w" data-a="glend" data-v="' + l.id + '">' + t("glRemove") + "</button></div></div>";
+        else if (l.status === "pending" && l.code) h += '<div class="card" style="text-align:center"><div class="sec" style="margin:0">' + t("glCodeT") + '</div><div style="font-family:var(--f-mono);font-size:34px;font-weight:600;letter-spacing:.2em;margin:6px 0">' + esc(l.code) + '</div><p class="fine" style="margin:0 0 10px">' + t("glCodeNote") + " " + t("glExpires") + '</p><div class="btns"><button class="btn p w" data-a="glshare" data-v="' + esc(l.code) + '">' + t("glShare") + '</button><button class="btn w" data-a="glend" data-v="' + l.id + '">' + t("glCancel") + "</button></div></div>";
+      });
+      var pend = mine.some(function (l) { return l.status === "pending"; });
+      if (!pend && mine.length < 5) h += '<div class="card"><label class="lb" for="gMe">' + t("glMyName") + '</label><input class="fld" id="gMe" autocomplete="off" maxlength="60"><label class="lb" for="gMyPhone">' + t("glMyPhone") + '</label><input class="fld" id="gMyPhone" inputmode="tel" maxlength="20"><button class="btn p w" style="margin-top:12px" data-a="glcreate">' + t("glCreate") + "</button></div>";
+      else if (!pend) h += '<p class="fine">' + t("glMax") + "</p>";
+    } else {
+      h += '<div class="card"><div class="sec" style="margin:0 0 6px">' + t("glJoinT") + '</div><input class="fld" id="glCode" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="' + t("glCode") + '" style="text-transform:uppercase;letter-spacing:.2em;font-family:var(--f-mono)"><label class="lb" for="glName">' + t("glMyName") + '</label><input class="fld" id="glName" autocomplete="off" maxlength="60"><label class="lb" for="glPhone">' + t("glPhone2") + '</label><input class="fld" id="glPhone" inputmode="tel" maxlength="20"><button class="btn p w" style="margin-top:12px" data-a="gljoin">' + t("glJoin") + "</button></div>";
+      if (!watch.length) h += '<div class="card"><p class="fine" style="margin:0">' + t("glNone") + "</p></div>";
+      watch.forEach(function (l) {
+        var al = S.gl.alerts.filter(function (x) { return x.link_id === l.id; }), p = l.protected_name || "?";
+        h += '<div class="sec">' + esc(fill2(t("famOwner"), { p: p })) + '</div><div class="btns" style="margin:0 0 8px">' + (l.protected_phone ? '<a class="btn" href="tel:' + esc(l.protected_phone.replace(/[^0-9+]/g, "")) + '">' + I.phone + " " + esc(fill2(t("famCall"), { p: p })) + "</a>" : "") + '<button class="btn w" data-a="glend" data-v="' + l.id + '">' + t("glRemove") + "</button></div>";
+        h += al.length ? al.map(function (a) {
+          return '<div class="al ' + (a.level === "amber" ? "amber" : "red") + '"><time>' + esc(fmtAgo(Date.parse(a.created_at))) + "</time><p>" + esc(alertText({ k: a.kind, n: a.number, a: a.amount }, { protectedName: p })) + "</p></div>";
+        }).join("") : '<div class="card"><p class="fine" style="margin:0">' + esc(fill2(t("glNoAl"), { p: p })) + "</p></div>";
+      });
+    }
+    return h;
+  }
   function vFam() {
+    if (Cloud.on()) return vFamLive();
     var g = S.shared.guardian, al = S.shared.alerts;
     var h = header(t("fam"), false) + '<div class="seg" role="group">' +
       '<button data-a="famtab" data-v="mine" aria-pressed="' + (S.famTab === "mine") + '">' + t("famMine") + '</button><button data-a="famtab" data-v="view" aria-pressed="' + (S.famTab === "view") + '">' + t("famView") + "</button></div>";
@@ -2346,7 +2431,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     else if (a === "cloudsync") { S.cstat = "connecting"; render(true); cloudSync(); toast(t("setSrvWait")); }
     else if (a === "cnoff") { Relay.close(); Relay.setRoom(""); S.rstat = "off"; render(); }
     else if (a === "cntest") { Relay.send("app", { k: "hello" }).then(function (ok) { toast(ok ? t("cnTested") : t("cnBad")); }); }
-    else if (a === "tab") { S.tab = v; S.det = null; S.sheet = null; if (v === "calls") loadCalls(false); render(); renderOv(); }
+    else if (a === "tab") { S.tab = v; S.det = null; S.sheet = null; render(); renderOv(); if (v === "fam" && Cloud.on()) loadGuardian(true); }
     else if (a === "menu") { S.sheet = "menu"; renderOv(); }
     else if (a === "theme" || a === "themetoggle") { S.theme = a === "themetoggle" ? (isDark() ? "light" : "dark") : v; try { localStorage.setItem("linda_theme", S.theme); } catch (e) {} applyTheme(); render(true); renderOv(); }
     else if (a === "logo") { var nw = Date.now(); taps = nw - tapT < 1200 ? taps + 1 : 1; tapT = nw; if (taps >= 2) { taps = 0; S.sheet = "demo"; renderOv(); } }
@@ -2389,7 +2474,22 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
     else if (a === "flowskip") { flowSkip(); }
     else if (a === "copycase") { copyReport(); }
     else if (a === "sendcase") { sendCase(); }
-    else if (a === "famtab") { S.famTab = v; render(); }
+    else if (a === "famtab") { S.famTab = v; render(); if (Cloud.on()) loadGuardian(true); }
+    else if (a === "glcreate") {
+      var gn = (document.getElementById("gMe") || {}).value || "", gph = (document.getElementById("gMyPhone") || {}).value || "";
+      Cloud.guardian.create(gn.trim(), gph.trim()).then(function () { loadGuardian(true); }, function (er) { toast(/too many/.test(er.message) ? t("glMax") : t("glOffline")); });
+    }
+    else if (a === "gljoin") {
+      var jc = ((document.getElementById("glCode") || {}).value || "").trim(), jn = ((document.getElementById("glName") || {}).value || "").trim(), jp = ((document.getElementById("glPhone") || {}).value || "").trim();
+      if (jc.length < 6) { toast(t("glBad")); return; }
+      Cloud.guardian.join(jc, jn, jp).then(function (r) { if (!r) { toast(t("glBad")); return; } toast(t("glJoined")); loadGuardian(true); }, function (er) { toast(/too many/.test(er.message) ? t("glTries") : t("glOffline")); });
+    }
+    else if (a === "glend") { Cloud.guardian.end(Number(v)).then(function () { toast(t("glEnded")); loadGuardian(true); }, function () { toast(t("glOffline")); }); }
+    else if (a === "glshare") {
+      var gm = fill2(t("glShareMsg"), { c: v });
+      if (navigator.share) navigator.share({ text: gm }).catch(function () {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(gm).then(function () { toast(t("glShareCopied")); }, function () {});
+    }
     else if (a === "famon") {
       var gm = ($("#gMe").value || "").trim() || G_DEF.protectedName, gn = ($("#gName").value || "").trim() || G_DEF.name, gp = ($("#gNum").value || "").trim() || G_DEF.phone;
       S.shared = Shared.setGuardian({ name: gn, phone: gp, protectedName: gm }); toast(t("famOnToast")); render();
