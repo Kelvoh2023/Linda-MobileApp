@@ -1951,8 +1951,8 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       S.shared = Shared.applyRemote(r.rows, r.broadcast, r.full);
       if ((r.broadcast ? r.broadcast.text : null) !== old) S.bdis = 0;
       S.cstat = "live"; syncNative(); loadGuardian(true);
-      if (S.tab === "home" || S.tab === "settings" || S.tab === "reports") render(true);
-    }, function () { cloudBusy = false; S.cstat = "offline"; if (S.tab === "settings") render(true); });
+      if (S.tab === "home" || S.tab === "settings" || S.tab === "reports") renderUnlessTyping();
+    }, function () { cloudBusy = false; S.cstat = "offline"; if (S.tab === "settings") renderUnlessTyping(); });
   }
   /* Family Guardian from the server: my guardians, the people I protect, and their alerts */
   function loadGuardian(quiet) {
@@ -1980,9 +1980,15 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
           S.gl.waitT = setTimeout(function () { S.gl.waitT = null; if (S.tab === "fam") loadGuardian(true); }, 5000);
         }
         syncNative();
-        if (!quiet || fresh.length || S.tab === "fam") render(true);
+        var sig = JSON.stringify([links, a[0]]), changed = sig !== S.gl.sig; S.gl.sig = sig;
+        if (changed || fresh.length) renderUnlessTyping();
       });
-    }).catch(function () { S.gl.busy = false; if (S.tab === "fam") render(true); });
+    }).catch(function () { S.gl.busy = false; });
+  }
+  function renderUnlessTyping() {
+    var a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.id !== "askInput") return;
+    render(true);
   }
   function startCloud() {
     if (cloudT) { clearInterval(cloudT); cloudT = null; }
@@ -2245,7 +2251,13 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       S.lastErr = "screen: " + ((e && e.message) || e);
       h = '<div class="card"><h3>Something went wrong</h3><p class="fine">' + esc(S.lastErr) + '</p><div class="btns"><button class="btn p w" data-a="tab" data-v="home">Home</button><button class="btn w" data-a="diag">' + t("diag") + "</button></div></div>";
     }
+    /* keep what the person is typing: remember every field in the page, redraw, then put it back */
+    var typed = {}, act = document.activeElement, actId = act && act.id && v.contains(act) ? act.id : "", selS = 0, selE = 0;
+    Array.prototype.forEach.call(v.querySelectorAll("input[id],textarea[id],select[id]"), function (el) { typed[el.id] = el.value; });
+    if (actId) { try { selS = act.selectionStart; selE = act.selectionEnd; } catch (e) {} }
     v.innerHTML = h; v.scrollTop = keepScroll ? top : 0;
+    Object.keys(typed).forEach(function (id) { var el = document.getElementById(id); if (el && typed[id] !== "" && el.value !== typed[id] && keepScroll) el.value = typed[id]; });
+    if (actId && keepScroll) { var fe = document.getElementById(actId); if (fe) { fe.focus(); try { fe.setSelectionRange(selS, selE); } catch (e) {} } }
     var old = $("#askbar"), keep = old && $("#askInput") ? $("#askInput").value : ""; if (old) old.remove();
     if (S.tab === "ask") {
       var cs = curStep(), ph = cs && cs.type === "text" ? cs.ph[S.lang] : t("askPh");
