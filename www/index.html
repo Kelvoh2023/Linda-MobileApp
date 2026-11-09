@@ -242,6 +242,54 @@ button.logo{border:0;padding:0;cursor:pointer}
 .sheet.grey h3{color:var(--ink)}
 .notif small{display:block;font-size:11px;color:var(--muted);margin-bottom:1px}
 .nav button{font-size:10.5px}
+/* ---- Redesign skin: softer cards, motion, pill tab bar ---- */
+:root{--sh:0 1px 2px rgba(16,32,26,.05),0 10px 28px rgba(16,32,26,.06);--ease:cubic-bezier(.2,.8,.2,1)}
+:root[data-theme="dark"]{--sh:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.25)}
+.card,.row,.msgbox,.al{border:0;box-shadow:var(--sh);border-radius:20px}
+.row.bad{box-shadow:inset 0 0 0 1.5px var(--red),var(--sh)}
+.row.warn{box-shadow:inset 0 0 0 1.5px #E5B13C,var(--sh)}
+.row.sos{box-shadow:inset 0 0 0 1.5px var(--red)}
+.vd{border-radius:22px}
+.btn{min-height:44px;border:0;box-shadow:inset 0 0 0 1px var(--line);transition:transform .12s var(--ease),background .2s}
+.btn.p,.btn.r{box-shadow:none}
+.btn:active,button.row:active,.stat:active,.nav button:active{transform:scale(.97)}
+.view{padding-top:12px}
+.view>*{animation:up .45s var(--ease) both}
+.view>*:nth-child(2){animation-delay:.05s}.view>*:nth-child(3){animation-delay:.1s}.view>*:nth-child(4){animation-delay:.15s}.view>*:nth-child(5){animation-delay:.2s}.view>*:nth-child(n+6){animation-delay:.25s}
+@keyframes up{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@keyframes ringp{0%{transform:scale(.62);opacity:.55}100%{transform:scale(1.25);opacity:0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.hero{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;background:var(--card);border-radius:28px;padding:26px 18px 20px;box-shadow:var(--sh)}
+.hero .orb{position:relative;width:128px;height:128px;display:grid;place-items:center}
+.hero .orb i{position:absolute;inset:0;border-radius:50%;border:2px solid var(--green);animation:ringp 2.8s ease-out infinite}
+.hero .orb i:nth-child(2){animation-delay:.9s}.hero .orb i:nth-child(3){animation-delay:1.8s}
+.hero .core{position:relative;width:88px;height:88px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center}
+.hero .core svg{width:42px;height:42px;stroke-width:2}
+.hero h3{font-size:24px;font-weight:800}
+.hero p{margin:0;font-size:13.5px;color:var(--muted)}
+.live{display:inline-flex;gap:7px;align-items:center;font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);border-radius:999px;padding:6px 12px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite}
+.stats3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stats3 .stat{padding:13px 11px}
+.stats3 .stat b{font-size:22px}
+.nav{border-top:0;box-shadow:0 -6px 24px rgba(16,32,26,.07);padding-top:6px}
+.nav button{position:relative;gap:3px;min-height:54px;justify-content:center;transition:color .2s}
+.nav button svg{width:24px;height:24px;padding:3px 14px;box-sizing:content-box;border-radius:999px;transition:background .25s var(--ease),transform .25s var(--ease)}
+.nav button[aria-current="true"] svg{background:var(--green-soft);transform:translateY(-1px)}
+.vd.scam{animation:shake .5s .35s both}
+.seg button,.lang button{transition:background .2s,color .2s}
+.sheet{border-radius:28px 28px 0 0;animation:rise .4s var(--ease)}
+.scrim{animation:fadein .3s ease both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.notif,.stk{animation:drop .55s cubic-bezier(.2,.9,.3,1.1)}
+.circ.g{animation:callring 1.6s infinite}
+@keyframes callring{0%{box-shadow:0 0 0 0 rgba(31,164,94,.6)}100%{box-shadow:0 0 0 22px rgba(31,164,94,0)}}
+.call{animation:fadein .3s ease both}
+.call .avt{box-shadow:0 0 0 0 rgba(255,255,255,.12);animation:callring2 2.4s infinite}
+@keyframes callring2{0%{box-shadow:0 0 0 0 rgba(255,255,255,.18)}100%{box-shadow:0 0 0 26px rgba(255,255,255,0)}}
+.toast{animation:rise .35s var(--ease)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 
@@ -1342,7 +1390,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
   /* ---------- text ---------- */
   var T = {
     en: { home: "Home", msgs: "Messages", calls: "Calls", ask: "Ask Linda", demo: "Demo",
-      prot: "You are protected", sync: "Fraud list synced with Safaricom at", flagged: "scams flagged", sent: "reports you sent",
+      prot: "You are protected", sync: "Fraud list synced with Safaricom at", flagged: "scams flagged", sent: "reports you sent", liveBadge: "Live protection on", checkedN: "messages checked",
       recent: "Recent activity", scamLikely: "Scam likely", careful: "Be careful", looksOk: "No scam signs found",
       verifiedSender: "Verified sender", preview: "Preview hidden for your safety", report: "Report to Safaricom", reported: "Reported. Thank you",
       block: "Block sender", blocked: "Sender blocked", how: "How Linda decides", howSub: "The model, the rules and the Safaricom list",
@@ -1433,7 +1481,7 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
       actAlerts: "Alerts", actAll: "All messages", liveEmpty: "No messages found in your inbox.", liveLoading: "Checking your messages...", liveErr: "Could not read your messages.",
       liveNotifT: "Linda flagged a message", liveNotifS: "From {n}. Tap to review." },
     sw: { home: "Nyumbani", msgs: "Ujumbe", calls: "Simu", ask: "Uliza Linda", demo: "Onyesho",
-      prot: "Umelindwa", sync: "Orodha ya ulaghai imesasishwa na Safaricom saa", flagged: "ulaghai umegunduliwa", sent: "ripoti ulizotuma",
+      prot: "Umelindwa", sync: "Orodha ya ulaghai imesasishwa na Safaricom saa", flagged: "ulaghai umegunduliwa", sent: "ripoti ulizotuma", liveBadge: "Ulinzi uko hai", checkedN: "ujumbe umekaguliwa",
       recent: "Shughuli za hivi karibuni", scamLikely: "Huenda ni ulaghai", careful: "Kuwa mwangalifu", looksOk: "Hakuna dalili za ulaghai",
       verifiedSender: "Mtumaji aliyethibitishwa", preview: "Maudhui yamefichwa kwa usalama wako", report: "Ripoti kwa Safaricom", reported: "Imeripotiwa. Asante",
       block: "Mzuie mtumaji", blocked: "Mtumaji amezuiwa", how: "Jinsi Linda inavyoamua", howSub: "Modeli, kanuni na orodha ya Safaricom",
@@ -2065,8 +2113,8 @@ if (typeof module !== "undefined") module.exports = LindaFlow;
           (S.live.denied ? '<div class="urgent" style="background:var(--amber-soft);color:var(--amber);border-radius:12px;padding:9px 11px;font-size:12.5px">' + t("liveDenied") + "</div>" : "") + '<button class="btn p" data-a="livego">' + t("liveBtn") + "</button></div>";
     }
     return header("Linda", true) +
-      '<div class="card status"><h3>' + t("prot") + '</h3><p><span class="dot"></span>' + t("sync") + " " + Shared.fmtTime(S.shared.syncedAt) + "</p></div>" + liveCard +
-      '<div class="stats"><button class="card stat" data-a="goflag"><b>' + ((S.live.on ? 0 : 12) + flagged) + "</b><span>" + t("flagged") + '</span></button><button class="card stat" data-a="tab" data-v="reports"><b>' + S.reports + "</b><span>" + t("sent") + "</span></button></div>" +
+      '<div class="hero"><div class="orb"><i></i><i></i><i></i><div class="core">' + I.shield + '</div></div><h3>' + t("prot") + '</h3><p>' + t("sync") + " " + Shared.fmtTime(S.shared.syncedAt) + '</p>' + (SMS() && !S.live.on ? "" : '<span class="live"><i></i>' + t("liveBadge") + "</span>") + "</div>" + liveCard +
+      '<div class="stats3"><button class="card stat" data-a="goflag"><b>' + ((S.live.on ? 0 : 12) + flagged) + "</b><span>" + t("flagged") + '</span></button><button class="card stat" data-a="tab" data-v="reports"><b>' + S.reports + "</b><span>" + t("sent") + '</span></button><button class="card stat" data-a="tab" data-v="act"><b>' + Math.max(S.live.total || 0, S.live.msgs.length) + "</b><span>" + t("checkedN") + "</span></button></div>" +
       extra +
       '<button class="row sos" data-a="flowstart"><div class="av">' + I.alert + '</div><div class="tx"><b>' + t("scammed") + "</b><p>" + t("scammedSub") + "</p></div></button>" +
       '<button class="row" data-a="tab" data-v="about"><div class="av">' + I.spark + '</div><div class="tx"><b>' + t("how") + "</b><p>" + t("howSub") + "</p></div></button>" +
